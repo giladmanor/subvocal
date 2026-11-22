@@ -35,10 +35,22 @@ On macOS, give your terminal access to the microphone before you record.
 
 > **Caution:** Recordings are personal data. Keep them in `data/`. Git does not include this folder.
 
-Each recording run asks for the speaker name and makes a new session folder:
-`data/user-recordings/<speaker>-<YYYY-MM-DD>-<HHMMSS>/`. In the steps below, `$SESSION` is that folder.
+The recorder is a card app. `python -m subvocal.record` opens it in a Chrome window with no
+address bar. The app asks for the speaker name and the prompt list (the default is the probe list).
+The microphone stays on for the full session, and the speaker reads one card at a time.
 
-1. Record the probe list (the default list):
+| Key | Action |
+|-----|--------|
+| Space, Enter, or ← | Go to the next card |
+| → or Backspace | Go back and read the card again (the last take is saved) |
+| P | Pause, or continue |
+| Esc | End the session |
+
+Each session makes a new folder: `data/user-recordings/<speaker>-<YYYY-MM-DD>-<HHMMSS>/`.
+The folder contains `full-session.flac`, `events.json` (the card flips), `session.json`,
+`prompts.tsv`, and one `<id>.wav` file for each card. In the steps below, `$SESSION` is that folder.
+
+1. Open the recorder, and record the probe list (the default list):
    `python -m subvocal.record`
 2. Transcribe the recordings:
    `python -m subvocal.transcribe --audio $SESSION --out $SESSION/hyp.tsv`
@@ -46,15 +58,15 @@ Each recording run asks for the speaker name and makes a new session folder:
    `python -m subvocal.diagnose --hyp $SESSION/hyp.tsv --profile data/user-recordings/dana-profile.json`
 4. Select the first sentences:
    `python -m subvocal.select --n 40 --profile data/user-recordings/dana-profile.json --out data/user-recordings/dana-next.tsv`
-5. Record the sentences:
-   `python -m subvocal.record --speaker dana --list data/user-recordings/dana-next.tsv`
+5. Record the sentences. In the recorder, select `data/user-recordings/dana-next.tsv` from the list menu.
 6. Transcribe them, and update the profile:
    `python -m subvocal.transcribe --audio $SESSION --out $SESSION/hyp.tsv`
    `python -m subvocal.diagnose --refs prompts/sentences.tsv --hyp $SESSION/hyp.tsv --profile data/user-recordings/dana-profile.json`
 7. Add the recorded IDs to `data/user-recordings/dana-recorded.txt`.
 8. Select the next sentences with `--done data/user-recordings/dana-recorded.txt`, and do steps 5 to 8 again.
 
-To continue a stopped session, run `python -m subvocal.record --out $SESSION`. The script skips the items that it recorded before.
+If the app stops before the end of a session, the recording and the card flips stay in the folder.
+To make the card files again, run `python -m subvocal.record --split $SESSION`.
 
 To check the coverage of the full sentence set, run `python -m subvocal.coverage`.
 
