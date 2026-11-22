@@ -136,6 +136,59 @@ The development machine is an Apple M1 Max with 32 GB of memory.
 > datasets, or trained adapters to this public repository. The `.gitignore` file
 > excludes them.
 
+## Speaker diagnosis and adaptive sentence selection
+
+Each speaker has different problem sounds. Subvocal does not ask every speaker to read all
+300 sentences in the same order. It first finds the problem sounds, and then it selects the
+sentences that contain these sounds.
+
+### The probe list
+
+`prompts/probe.tsv` contains 44 short words. The speaker reads each word in the carrier
+phrase "המילה היא ___". The list takes about 3 minutes to read.
+
+- Minimal pairs test the sounds that are often confused: שיר / סיר, גר / גל, פת / בת, דג / תג.
+- Single words test each consonant: /h/, /j/, /ʔ/, /tʃ/ (צ׳), /dʒ/ (ג׳), /ʒ/ (ז׳), and more.
+- Cluster words test consonant clusters: שתיים, פסנתר, מברשת, צפרדע, זברה.
+- Vowel words test /a/, /o/, and /u/.
+
+A neutral carrier phrase is important. The model must identify the word from the sound
+alone, because the phrase gives no clue about the word.
+
+### The diagnosis
+
+1. Record the probe list with the speaker.
+2. Transcribe the recordings with the base model.
+3. Align the phonemes of the transcript with the phonemes of the reference.
+4. Count the errors for each phoneme, and the confusions (for example ʃ→s).
+5. Save the counts in a speaker profile.
+
+The diagnosis also works on recorded sentences. Thus, the profile improves after each session.
+
+### The adaptive loop
+
+```
+probe -> profile -> select 40 sentences -> record -> transcribe -> update profile -> select the next 40 ...
+```
+
+The selection gives more value to the sounds with a high error rate. It also keeps a
+minimum coverage of all other sounds. A test with a simulated speaker (ש sounds as ס,
+ר sounds as ל) gave these results for a set of 40 sentences:
+
+| Sound | No profile | With the profile |
+|-------|-----------:|-----------------:|
+| /ʃ/ (ש) | 29 | 72 |
+| /ʁ/ (ר) | 47 | 77 |
+
+### Limits
+
+- The phonemizer (phonikud) sometimes makes errors, for example ש as /s/ in "שחקן".
+  The coverage counts are thus estimates.
+- The phonemizer guesses the vowels of a wrong word with no context. Vowel error rates are
+  less reliable than consonant error rates.
+- The diagnosis measures the errors of the model for this speaker. It does not measure the
+  speech of the speaker. A speech therapist must make the clinical assessment.
+
 ## Measurements
 
 - **WER** (word error rate) and **CER** (character error rate) on the test set.

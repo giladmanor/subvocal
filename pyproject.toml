@@ -1,0 +1,20 @@
+[project]
+name = "subvocal"
+version = "0.1.0"
+description = "Speech aid for Hebrew speakers with a speech impairment"
+requires-python = ">=3.10"
+dependencies = [
+    "phonikud",
+    "phonikud-onnx",
+    "faster-whisper",
+    "sounddevice",
+    "soundfile",
+    "numpy",
+]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["subvocal"]

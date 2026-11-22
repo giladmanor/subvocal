@@ -1,0 +1,301 @@
+id	section	text	phonemes
+S001	Greetings and conversation	שלום, מה שלומך היום?	ʃalˈom, mˈa ʃlomχˈa hajˈom?
+S002	Greetings and conversation	בוקר טוב, ישנת טוב בלילה?	bˈokeʁ tˈov, jˈaʃˈanta tˈov balˈajla?
+S003	Greetings and conversation	ערב טוב לכולם, תודה שבאתם.	ʔˈeʁev tˈov leχulˈam, todˈa ʃebˈatem.
+S004	Greetings and conversation	נעים מאוד, קוראים לי דני.	naʔˈim meʔˈod, koʁʔˈim lˈi dˈani.
+S005	Greetings and conversation	אני שמח לראות אותך שוב.	ʔanˈi samˈeaχ liʁʔˈot ʔotχˈa ʃˈuv.
+S006	Greetings and conversation	סליחה, לא שמעתי מה אמרת.	sliχˈa, lˈo ʃamˈaʔti mˈa ʔamˈaʁta.
+S007	Greetings and conversation	תוכל לחזור על זה לאט יותר?	tuχˈal laχazˈoʁ ʔˈal zˈe leʔˈat jotˈeʁ?
+S008	Greetings and conversation	אני צריך עוד רגע כדי לחשוב.	ʔanˈi tsaʁˈiχ ʔˈod ʁˈeɡa kedˈej laχaʃˈov.
+S009	Greetings and conversation	תודה רבה על העזרה שלך.	todˈa ʁabˈa ʔˈal haʔezʁˈa ʃelχˈa.
+S010	Greetings and conversation	אין בעיה, בשמחה.	ʔˈejn beʔajˈa, besimχˈa.
+S011	Greetings and conversation	להתראות, נדבר מחר בבוקר.	lehitʁaʔˈot, nedabˈeʁ maχˈaʁ babˈokeʁ.
+S012	Greetings and conversation	לילה טוב וחלומות מתוקים.	lˈajla tˈov vaχalomˈot metukˈim.
+S013	Greetings and conversation	מה נשמע אצלכם בבית?	mˈa niʃmˈa ʔetslχˈem babˈajit?
+S014	Greetings and conversation	הכול בסדר, ואצלך?	hakˈol besˈedeʁ, veʔetslχˈa?
+S015	Greetings and conversation	אני מסכים איתך לגמרי.	ʔanˈi maskˈim ʔitχˈa leɡamʁˈej.
+S016	Greetings and conversation	אני לא בטוח שהבנתי נכון.	ʔanˈi lˈo batˈuaχ ʃehevˈanti naχˈon.
+S017	Greetings and conversation	בוא נדבר על זה אחר כך.	bˈo nedabˈeʁ ʔˈal zˈe ʔaχˈaʁ kˈaχ.
+S018	Greetings and conversation	רגע, יש לי שאלה קטנה.	ʁˈeɡa, jˈeʃ lˈi ʃeʔelˈa ktanˈa.
+S019	Greetings and conversation	זה רעיון מצוין, בוא ננסה.	zˈe ʁaʔjˈon metsujˈan, bˈo nenasˈe.
+S020	Greetings and conversation	אני מצטער שאיחרתי.	ʔanˈi mitstaʔˈeʁ ʃeʔiχˈaʁti.
+S021	Greetings and conversation	שבת שלום ומבורך לכולם.	ʃabˈat ʃalˈom umvoʁˈaχ leχulˈam.
+S022	Greetings and conversation	חג שמח לכל המשפחה.	χˈaɡ samˈeaχ leχˈol hamiʃpaχˈa.
+S023	Greetings and conversation	מזל טוב ליום ההולדת שלך.	mazˈal tˈov lejˈom hahulˈedet ʃelχˈa.
+S024	Greetings and conversation	איך עבר עליך סוף השבוע?	ʔˈejχ ʔavˈaʁ ʔalˈeχa sˈof haʃavˈua?
+S025	Greetings and conversation	אני מרגיש הרבה יותר טוב.	ʔanˈi maʁɡˈiʃ haʁbˈe jotˈeʁ tˈov.
+S026	Greetings and conversation	תגיד לי את האמת, בבקשה.	taɡˈid lˈi ʔˈet haʔemˈet, bevakaʃˈa.
+S027	Greetings and conversation	אפשר לשאול אותך משהו אישי?	ʔefʃˈaʁ liʃʔˈol ʔotχˈa mˈaʃehu ʔiʃˈi?
+S028	Greetings and conversation	זה מצחיק מאוד, צחקתי המון.	zˈe matsχˈik meʔˈod, tsaχˈakti hamˈon.
+S029	Greetings and conversation	בהצלחה במבחן מחר.	behatslaχˈa bemivχˈan maχˈaʁ.
+S030	Greetings and conversation	תשמור על עצמך ותרגיש טוב.	tiʃmˈoʁ ʔˈal ʔatsmeχˈa vetaʁɡˈiʃ tˈov.
+S031	Needs and health	אני רעב, מה יש לאכול?	ʔanˈi ʁaʔˈev, mˈa jˈeʃ leʔeχˈol?
+S032	Needs and health	אני צמא, אפשר כוס מים קרים?	ʔanˈi tsamˈe, ʔefʃˈaʁ kˈos majˈim kaʁˈim?
+S033	Needs and health	אני עייף ורוצה לנוח קצת.	ʔanˈi ʔajˈef veʁotsˈe lanˈuaχ ktsˈat.
+S034	Needs and health	כואב לי הראש מהבוקר.	koʔˈev lˈi haʁˈoʃ mehabokˈeʁ.
+S035	Needs and health	אני צריך ללכת לשירותים.	ʔanˈi tsaʁˈiχ lalˈeχet laʃeʁutˈim.
+S036	Needs and health	קר לי, תביא לי שמיכה בבקשה.	kˈaʁ lˈi, tavˈi lˈi smiχˈa bevakaʃˈa.
+S037	Needs and health	חם פה, אפשר לפתוח את החלון?	χˈam pˈo, ʔefʃˈaʁ liftˈoaχ ʔˈet haχalˈon?
+S038	Needs and health	תדליק את המזגן על עשרים וארבע.	tadlˈik ʔˈet hamazɡˈan ʔˈal ʔesʁˈim veʔˈaʁba.
+S039	Needs and health	הגב שלי כואב כשאני יושב הרבה.	haɡˈav ʃelˈi koʔˈev kʃeʔanˈi joʃˈev haʁbˈe.
+S040	Needs and health	אני צריך לקחת את הכדורים עכשיו.	ʔanˈi tsaʁˈiχ lakˈaχat ʔˈet hakaduʁˈim ʔaχʃˈav.
+S041	Needs and health	מתי התור לרופא השיניים?	matˈaj hatˈoʁ leʁofˈe haʃinajˈim?
+S042	Needs and health	יש לי חום גבוה וצמרמורת.	jˈeʃ lˈi χˈom ɡavˈoa utsmaʁmˈoʁet.
+S043	Needs and health	קבעתי תור לקלינאית התקשורת ביום שלישי.	kavˈaʔti tˈoʁ liklˈinaʔit hatikʃˈoʁet bejˈom ʃliʃˈi.
+S044	Needs and health	התרגילים עם הקלינאית עוזרים לי.	hataʁɡilˈim ʔˈim haklˈinaʔit ʔozʁˈim lˈi.
+S045	Needs and health	תזמין לי בבקשה מונית לבית החולים.	tazmˈin lˈi bevakaʃˈa monˈit levˈet haχolˈim.
+S046	Needs and health	אני רוצה לשבת ליד החלון.	ʔanˈi ʁotsˈa laʃˈevet lejˈad haχalˈon.
+S047	Needs and health	תעזור לי לקום מהכיסא.	taʔazˈoʁ lˈi lakˈum mehakisˈe.
+S048	Needs and health	הנעליים החדשות לוחצות לי.	hanaʔalˈajim haχadaʃˈot loχatsˈot lˈi.
+S049	Needs and health	שכחתי את המשקפיים על השולחן.	ʃaχˈaχti ʔˈet hamiʃkafˈajim ʔˈal haʃulχˈan.
+S050	Needs and health	תעביר לי את הטלפון, בבקשה.	taʔavˈiʁ lˈi ʔˈet hatˈelefon, bevakaʃˈa.
+S051	Needs and health	הסוללה בטלפון כמעט נגמרה.	hasollˈa batˈelefˈon kimʔˈat niɡmʁˈa.
+S052	Needs and health	איפה המטען של המחשב?	ʔejfˈo hamitʔˈan ʃˈel hamaχʃˈev?
+S053	Needs and health	אני צריך שקט כדי להתרכז.	ʔanˈi tsaʁˈiχ ʃˈeket kedˈej lehitʁakˈez.
+S054	Needs and health	תנמיך קצת את המוזיקה.	tanmˈiχ ktsˈat ʔˈet hamˈuzika.
+S055	Needs and health	אני לא מרגיש טוב, תקרא לאחות.	ʔanˈi lˈo maʁɡˈiʃ tˈov, tikʁˈa lʔaχˈot.
+S056	Needs and health	התרופה הזאת עושה לי סחרחורת.	hatʁufˈa hazˈot ʔosˈa lˈi sχaʁχˈoʁet.
+S057	Needs and health	נפלתי ונחבלתי ברגל שמאל.	nafˈalti veneχbˈalti beʁˈeɡel smˈol.
+S058	Needs and health	אני אלרגי לבוטנים ולאגוזים.	ʔanˈi ʔaleʁɡˈi labtnˈim velaʔeɡuzˈim.
+S059	Needs and health	לחץ הדם שלי תקין היום.	lˈaχats hadˈam ʃelˈi takˈin hajˈom.
+S060	Needs and health	צריך לקבוע בדיקת דם בקופת חולים.	tsaʁˈiχ likbˈoa bdikˈat dˈam bekupˈat χolˈim.
+S061	Needs and health	אני רוצה להתקלח לפני השינה.	ʔanˈi ʁotsˈe lehitkalˈeaχ lifnˈej haʃenˈa.
+S062	Needs and health	תכבה את האור כשאתה יוצא.	tχabˈe ʔˈet haʔˈoʁ kʃeʔatˈa jotsˈe.
+S063	Needs and health	הכרית הזאת קשה מדי בשבילי.	hakaʁˈit hazˈot kaʃˈa midˈaj biʃvilˈi.
+S064	Needs and health	אני צריך עזרה עם הכפתורים.	ʔanˈi tsaʁˈiχ ʔezʁˈa ʔˈim hakaftoʁˈim.
+S065	Needs and health	תפתח לי את הבקבוק, הוא תקוע.	tiftˈaχ lˈi ʔˈet habakbˈuk, hˈu takˈua.
+S066	Food	אני רוצה פיצה עם זיתים ופטריות.	ʔanˈi ʁotsˈa pitsˈa ʔˈim zetˈim ufitʁijˈot.
+S067	Food	בבוקר אני שותה קפה שחור בלי סוכר.	babˈokeʁ ʔanˈi ʃotˈe kafˈe ʃaχˈoʁ blˈi sukˈaʁ.
+S068	Food	תכין לי חביתה עם סלט ירקות.	taχˈin lˈi χavˈita ʔˈim sˈelet jeʁakˈot.
+S069	Food	אפשר עוד פרוסה של לחם?	ʔefʃˈaʁ ʔˈod pʁusˈa ʃˈel lˈeχem?
+S070	Food	המרק הזה חם מדי, צריך לחכות.	hamaʁˈak hazˈe χˈam midˈaj, tsaʁˈiχ leχakˈot.
+S071	Food	אני אוהב שקשוקה עם הרבה פלפל.	ʔanˈi ʔohˈev ʃˈakʃˈuka ʔˈim haʁbˈe pilpˈel.
+S072	Food	קנינו תפוחים, בננות ותותים בשוק.	kanˈinu tapuχˈim, bananˈot vetutˈim baʃˈuk.
+S073	Food	תוסיף מלח ושמן זית לסלט.	tosˈif mˈelaχ veʃˈemen zˈajit lasalˈat.
+S074	Food	אני לא אוכל בשר, אני צמחוני.	ʔanˈi lˈo ʔoχˈel basˈaʁ, ʔanˈi tsimχonˈi.
+S075	Food	הגלידה בטעם שוקולד הכי טעימה.	haɡlidˈa betˈaʔam ʃˈokˈolad haχˈi teʔimˈa.
+S076	Food	בשבת אנחנו אוכלים ג׳חנון עם ביצה.	beʃabˈat ʔanˈaχnu ʔoχlˈim dʒaχnˈon ʔˈim betsˈa.
+S077	Food	נזמין צ׳יפס ושניצל לילדים.	nazmˈin tʃˈips uʃenitsˈel liladˈim.
+S078	Food	אני רוצה כוס תה עם נענע.	ʔanˈi ʁotsˈe kˈos tˈe ʔˈim naʔanˈa.
+S079	Food	העוגה של סבתא יצאה מושלמת.	haʔuɡˈa ʃˈel savtˈa jatsʔˈa muʃlˈemet.
+S080	Food	שכחנו לקנות חלב וגבינה צהובה.	ʃaχˈaχnu liknˈot χalˈav uɡvinˈa tsehubˈa.
+S081	Food	בוא נאכל ארוחת צהריים במסעדה.	bˈo noχˈal ʔaʁuχˈat tsohoʁajˈim bamisʔadˈa.
+S082	Food	החשבון בבקשה, אנחנו ממהרים.	haχeʃbˈon bevakaʃˈa, ʔanˈaχnu memahaʁˈim.
+S083	Food	הפלאפל פה טעים במיוחד.	haplafˈel pˈo taʔˈim bimjuχˈad.
+S084	Food	תשים את האורז במקרר.	tasˈim ʔˈet haʔˈoʁez bamkaʁˈeʁ.
+S085	Food	אני לא אוהב אוכל חריף מדי.	ʔanˈi lˈo ʔohˈev ʔˈoχel χaʁˈif midˈaj.
+S086	Food	יש לנו פסטה ברוטב עגבניות.	jˈeʃ lanˈu pˈasta beʁˈotev ʔaɡvanijˈot.
+S087	Food	מי רוצה עוד חתיכה מהעוגה?	mˈi ʁotsˈe ʔˈod χatiχˈa mehaʔuɡˈa?
+S088	Food	אני מעדיף מים בלי קרח.	ʔanˈi maʔadˈif majˈim blˈi keʁˈaχ.
+S089	Food	תחתוך לי את העוף לחתיכות קטנות.	taχtˈoχ lˈi ʔˈet haʔˈof laχatiχˈot ktanˈot.
+S090	Food	הקפה התקרר, תחמם אותו בבקשה.	hakafˈe hitkaʁˈeʁ, tχamˈem ʔotˈo bevakaʃˈa.
+S091	Food	אכלתי יותר מדי, אני מפוצץ.	ʔaχˈalti jotˈeʁ midˈaj, ʔanˈi mefotsˈets.
+S092	Food	תביא לי מזלג וכפית נקיים.	tavˈi lˈi mazlˈaɡ veχapˈit nekijˈim.
+S093	Food	הסושי הזה טרי ומעולה.	hasuʃˈi hazˈe taʁˈi umeʔulˈe.
+S094	Food	בערב נכין מרק עדשים חם.	baʔˈeʁev naχˈin mʁˈak ʔadaʃˈim χˈam.
+S095	Food	קניתי חומוס, טחינה ופיתות.	kanˈiti χumˈus, teχinˈa ufitˈot.
+S096	Food	אני מוסיף צ׳ילי לכל מנה.	ʔanˈi mosˈif tʃilˈi leχˈol manˈa.
+S097	Food	הבייגלה הזה מלוח מדי.	habajɡlˈe hazˈe malˈuaχ midˈaj.
+S098	Food	תשטוף את הכלים אחרי האוכל.	tiʃtˈof ʔˈet hakelˈim ʔaχaʁˈej haʔˈoχel.
+S099	Food	שתיתי מיץ תפוזים טבעי.	ʃatˈiti mˈits tapuzˈim tivʔˈi.
+S100	Food	הארוחה הייתה טעימה, תודה רבה.	haʔaʁuχˈa hajtˈa teʔimˈa, todˈa ʁabˈa.
+S101	Family and people	אמא שלי מתקשרת אליי כל ערב.	ʔˈima ʃelˈi mitkaʃˈeʁet ʔelˈaj kˈol ʔˈeʁev.
+S102	Family and people	אבא שלי עובד בבנק כבר שלושים שנה.	ʔabˈa ʃelˈi ʔovˈed babˈank kvˈaʁ ʃloʃˈim ʃanˈa.
+S103	Family and people	לאחי הקטן יש יום הולדת מחר.	leʔaχˈi hakatˈan jˈeʃ jˈom hulˈedet maχˈaʁ.
+S104	Family and people	אחותי גרה בחיפה עם בעלה.	ʔaχotˈi ɡˈaʁa beχefˈa ʔˈim baʔalˈa.
+S105	Family and people	הנכדים באים לבקר בשבת.	hanχadˈim baʔˈim levakˈeʁ beʃabˈat.
+S106	Family and people	סבא סיפר לנו סיפור מצחיק.	sˈaba sipˈeʁ lanˈu sipˈuʁ matsχˈik.
+S107	Family and people	החברים שלי מגיעים בשמונה.	haχaveʁˈim ʃelˈi maɡiʔˈim biʃmˈone.
+S108	Family and people	השכנה הביאה לנו עוגיות.	haʃχenˈa hevˈiʔa lanˈu ʔuɡijˈot.
+S109	Family and people	הבן שלי לומד באוניברסיטה בתל אביב.	habˈen ʃelˈi lomˈed baʔunivˈeʁsita betˈel ʔavˈiv.
+S110	Family and people	הבת שלי שרה במקהלה של בית הספר.	habˈat ʃelˈi ʃaʁˈa bamakhelˈa ʃˈel bˈet hasˈefeʁ.
+S111	Family and people	הדודה שלי מטפלת בצמחים בגינה.	hadodˈa ʃelˈi metapˈelet bitsmaχˈim baɡinˈa.
+S112	Family and people	פגשתי חבר ותיק ברחוב.	paɡˈaʃti χavˈeʁ vatˈik baʁχˈov.
+S113	Family and people	הכלב שלנו נובח על כל חתול.	hakˈelev ʃelˈanu novˈeaχ ʔˈal kˈol χatˈul.
+S114	Family and people	הילדים משחקים כדורגל בחצר.	hajeladˈim mesaχakˈim kaduʁˈeɡel beχatsˈeʁ.
+S115	Family and people	אני מתגעגע לסבתא שלי.	ʔanˈi mitɡaʔɡˈea lesavtˈa ʃelˈi.
+S116	Family and people	אשתי מכינה ארוחת ערב.	ʔiʃtˈi meχinˈa ʔaʁuχˈat ʔˈeʁev.
+S117	Family and people	בעלי נסע לעבודה מוקדם.	baʔalˈi nasˈa laʔavodˈa mukdˈam.
+S118	Family and people	התינוק ישן סוף סוף.	hatinˈok jaʃˈen sˈof sˈof.
+S119	Family and people	החתולה ילדה ארבעה גורים.	haχatulˈa jaldˈa ʔaʁbaʔˈa ɡuʁˈim.
+S120	Family and people	המורה של הבת שלי נחמדה מאוד.	hamoʁˈa ʃˈel habˈat ʃelˈi neχmadˈa meʔˈod.
+S121	Family and people	ג׳ודי וג׳ורג׳ הגיעו מלונדון.	dʒudˈi vedʒˈoʁdʒ hiɡˈiʔu milondˈon.
+S122	Family and people	החבר שלי ג׳ינג׳י עם נמשים.	heχavˈeʁ ʃelˈi dʒindʒˈi ʔˈim nimaʃˈim.
+S123	Family and people	יש לי שלושה אחים ושתי אחיות.	jˈeʃ lˈi ʃloʃˈa ʔaχˈim ˈuʃtej ʔaχajˈot.
+S124	Family and people	הבוס שלי ביקש דוח עד יום חמישי.	habˈos ʃelˈi bikˈeʃ dˈuaχ ʔˈad jˈom χamiʃˈi.
+S125	Family and people	הרופאה שלי מקשיבה בסבלנות.	haʁofʔˈa ʃelˈi makʃivˈa besavlanˈut.
+S126	Family and people	שיחקתי שחמט עם הנכד שלי.	siχˈakti ʃaχmˈat ʔˈim hanˈeχed ʃelˈi.
+S127	Family and people	צריך לקנות מתנה לחתונה של רותי.	tsaʁˈiχ liknˈot matanˈa laχatunˈa ʃˈel ʁutˈi.
+S128	Family and people	הוא הכי מצחיק במשפחה.	hˈu haχˈi matsχˈik bamiʃpaχˈa.
+S129	Family and people	היא תמיד עוזרת לכולם.	hˈi tamˈid ʔozˈeʁet leχulˈam.
+S130	Family and people	החברה שלי עברה דירה לירושלים.	haχaveʁˈa ʃelˈi ʔavʁˈa diʁˈa liʁuʃalajˈim.
+S131	Home and errands	מכונת הכביסה סיימה לעבוד.	meχonˈat hakvisˈa sijmˈa laʔavˈod.
+S132	Home and errands	צריך לתלות את הכביסה בחוץ.	tsaʁˈiχ litlˈot ʔˈet hakvisˈa baχˈuts.
+S133	Home and errands	תסגור את הדלת, יש רוח חזקה.	tisɡˈoʁ ʔˈet hadˈelet, jˈeʃ ʁˈuaχ χazakˈa.
+S134	Home and errands	המפתחות נמצאים במגירה העליונה.	hamaftχˈot nimtsaʔˈim bamɡeʁˈa haʔeljonˈa.
+S135	Home and errands	הברז במטבח מטפטף כל הלילה.	habˈeʁez bamitbˈaχ metaftˈef kˈol halˈajla.
+S136	Home and errands	צריך להחליף את הנורה בסלון.	tsaʁˈiχ lehaχalˈif ʔˈet hanuʁˈa basalˈon.
+S137	Home and errands	תוריד את הזבל כשאתה יוצא.	toʁˈid ʔˈet hazˈevel kʃeʔatˈa jotsˈe.
+S138	Home and errands	שכחתי לנעול את הדלת.	ʃaχˈaχti linʔˈol ʔˈet hadˈelet.
+S139	Home and errands	הדואר הגיע, יש מכתב בשבילך.	hadˈoʔaʁ hiɡˈia, jˈeʃ miχtˈav biʃvilχˈa.
+S140	Home and errands	החבילה תגיע ביום ראשון.	haχavilˈa taɡˈia bejˈom ʁiʃˈon.
+S141	Home and errands	צריך לשלם את חשבון החשמל.	tsaʁˈiχ leʃalˈem ʔˈet χeʃbˈon haχaʃmˈal.
+S142	Home and errands	תשקה את העציצים במרפסת.	teʃkˈe ʔˈet haʔatsitsˈim bamiʁpˈeset.
+S143	Home and errands	השואב אבק עושה רעש חזק.	haʃoʔˈev ʔavˈak ʔosˈe ʁˈaʔaʃ χazˈak.
+S144	Home and errands	בוא נסדר את הארון ביחד.	bˈo nesadˈeʁ ʔˈet haʔaʁˈon bejˈaχad.
+S145	Home and errands	המעלית תקועה שוב בקומה שלישית.	hamaʔalˈit tkˈuʔa ʃˈuv bekˈoma ʃliʃˈit.
+S146	Home and errands	החניה מתחת לבניין מלאה.	haχanajˈa mitˈaχat labinjˈan meleʔˈa.
+S147	Home and errands	אני הולך לסופר לקנות כמה דברים.	ʔanˈi holˈeχ lsupˈeʁ liknˈot kˈama dvaʁˈim.
+S148	Home and errands	צריך לתקן את הכיסא השבור.	tsaʁˈiχ letakˈen ʔˈet hakisˈe haʃavˈuʁ.
+S149	Home and errands	הטלוויזיה לא נדלקת, אולי השלט מקולקל.	hatelevˈizja lˈo nidlˈeket, ʔulˈaj haʃˈelet mekulkˈal.
+S150	Home and errands	תטען את הסוללות של השלט.	titʔˈan ʔˈet hasollˈot ʃˈel haʃˈelet.
+S151	Home and errands	הוא תלה ז׳קט חום על הקולב.	hˈu talˈa ʒekˈet χˈum ʔˈal hakˈolab.
+S152	Home and errands	הגראז׳ מלא בקופסאות ישנות.	haɡʁˈaʒ malˈe bekufsaʔˈot jeʃanˈot.
+S153	Home and errands	צבענו את החדר בכחול בהיר.	tsavˈaʔnu ʔˈet haχˈedeʁ beχaχˈol bahˈiʁ.
+S154	Home and errands	נשארו לנו רק שתי ביצים במקרר.	niʃʔaʁˈu lanˈu ʁˈak ʃtˈej betsˈim bamkaʁˈeʁ.
+S155	Home and errands	שמתי את הג׳ינס במכונת הכביסה.	sˈamti ʔˈet hadʒˈins bimeχonˈat hakvisˈa.
+S156	Home and errands	יש ג׳וק במטבח, תביא נעל.	jˈeʃ dʒˈok bamitbˈaχ, tavˈi nˈaʔal.
+S157	Home and errands	הספה החדשה בצבע בז׳ ונוחה מאוד.	hasapˈa haχadaʃˈa betsˈeva bˈaʒ venˈoχa meʔˈod.
+S158	Home and errands	תפתח את התריס, חושך פה.	tiftˈaχ ʔˈet hatʁˈis, χˈoʃeχ pˈo.
+S159	Home and errands	נגמר נייר הטואלט.	niɡmˈaʁ nejˈaʁ hatuʔˈelt.
+S160	Home and errands	בוא נזמין שליח עם מצרכים.	bˈo nazmˈin ʃalˈiaχ ʔˈim mitsʁaχˈim.
+S161	Time, numbers, and places	השעה עכשיו שבע וחצי בבוקר.	haʃaʔˈa ʔaχʃˈav ʃˈeva vaχˈetsi babˈokeʁ.
+S162	Time, numbers, and places	נפגש ברבע לשתיים ליד בית הקפה.	nifɡˈaʃ beʁˈeva liʃtˈajim lejˈad bˈet hakafˈe.
+S163	Time, numbers, and places	הפגישה נדחתה ליום רביעי הבא.	hapɡiʃˈa nidχatˈa lejˈom ʁeviʔˈi habˈa.
+S164	Time, numbers, and places	יש לי שבעה עשר שקלים בארנק.	jˈeʃ lˈi ʃivʔˈa ʔasˈaʁ ʃkalˈim baʔˈaʁnak.
+S165	Time, numbers, and places	הטיסה יוצאת בחמש ועשרים.	hatisˈa jotsˈet beχamˈeʃ veʔesʁˈim.
+S166	Time, numbers, and places	האוטובוס מאחר בעשר דקות.	haʔˈotobus meʔaχˈeʁ beʔˈeseʁ dakˈot.
+S167	Time, numbers, and places	גרתי בבאר שבע שנים רבות.	ɡˈaʁti biveʔˈeʁ ʃˈeva ʃanˈim ʁabˈot.
+S168	Time, numbers, and places	נסענו לאילת בחופש הגדול.	nasˈaʔnu leʔejlˈat baχˈofeʃ haɡadˈol.
+S169	Time, numbers, and places	הים בתל אביב שקט היום.	hajˈam betˈel ʔavˈiv ʃakˈet hajˈom.
+S170	Time, numbers, and places	טיילנו בגליל ובגולן באביב.	tijalnˈu baɡalˈil uvaɡolˈan baʔavˈiv.
+S171	Time, numbers, and places	הרכבת לנהריה יוצאת כל חצי שעה.	haʁakˈevet lienahaʁˈija jotsˈet kˈol χatsˈi ʃaʔˈa.
+S172	Time, numbers, and places	המספר שלי מתחיל באפס חמישים ושתיים.	hamispˈaʁ ʃelˈi matχˈil beʔˈefes χamiʃˈim uʃtˈajim.
+S173	Time, numbers, and places	זה עולה מאה ושמונים שקלים.	zˈe ʔolˈe meʔˈa uʃmonˈim ʃkalˈim.
+S174	Time, numbers, and places	הכתובת היא רחוב הרצל שתים עשרה.	haktˈovet hˈi ʁeχˈov hˈeʁtsl ʃtˈem ʔesʁˈe.
+S175	Time, numbers, and places	בחודש דצמבר יורד גשם רב.	beχˈodeʃ detsˈembeʁ joʁˈed ɡˈeʃem ʁˈav.
+S176	Time, numbers, and places	נולדתי באלף תשע מאות שמונים ושש.	nolˈadti beʔˈelef tˈeʃa meʔˈot ʃmonˈim vaʃˈeʃ.
+S177	Time, numbers, and places	יש לנו עוד שלושה ימים עד החג.	jˈeʃ lanˈu ʔˈod ʃloʃˈa jamˈim ʔˈad haχˈaɡ.
+S178	Time, numbers, and places	התחנה נמצאת מעבר לכביש.	hataχanˈa nimtsˈet meʔˈeveʁ lakvˈiʃ.
+S179	Time, numbers, and places	תפנה ימינה ברמזור השני.	tifnˈe jaminˈa baʁamzˈoʁ haʃenˈi.
+S180	Time, numbers, and places	החנות סגורה בימי שישי אחרי הצהריים.	haχanˈut sɡuʁˈa bimˈej ʃiʃˈi ʔaχaʁˈej hatsohoʁajˈim.
+S181	Time, numbers, and places	הוא רץ חמישה קילומטרים כל בוקר.	hˈu ʁˈats χamiʃˈa kilˈometʁim kˈol bˈokeʁ.
+S182	Time, numbers, and places	חיכיתי שעה שלמה בתור.	χikˈiti ʃaʔˈa ʃlemˈa batˈoʁ.
+S183	Time, numbers, and places	הקיץ השנה חם ולח במיוחד.	hakˈajits haʃanˈa χˈam velˈaχ bimjuχˈad.
+S184	Time, numbers, and places	בחורף אני לובש ז׳קט ומגפיים.	baχˈoʁef ʔanˈi lovˈeʃ ʒekˈet umaɡafˈajim.
+S185	Time, numbers, and places	ביום ראשון אני מתחיל עבודה חדשה.	bejˈom ʁiʃˈon ʔanˈi matχˈil ʔavodˈa χadaʃˈa.
+S186	Time, numbers, and places	היום יום שני, העשירי בחודש.	hajˈom jˈom ʃenˈi, haʔasiʁˈi baχˈodeʃ.
+S187	Time, numbers, and places	המוזיאון פתוח עד שמונה בערב.	hamuzeʔˈon patˈuaχ ʔˈad ʃmˈone baʔˈeʁev.
+S188	Time, numbers, and places	חנינו בחניון ליד הקניון.	χanˈinu baχˈanjon lejˈad hakanjˈon.
+S189	Time, numbers, and places	המלון נמצא קרוב לחוף.	hamalˈon nimtsˈa kaʁˈov laχˈof.
+S190	Time, numbers, and places	נשאר רבע שעה עד הסוף.	niʃʔˈaʁ ʁˈeva ʃaʔˈa ʔˈad hasˈof.
+S191	Time, numbers, and places	טסנו לפריז לשבוע אחד.	tˈasnu lepaʁˈiz leʃavˈua ʔeχˈad.
+S192	Time, numbers, and places	הוא נוסע לעבודה באופניים.	hˈu nosˈea laʔavodˈa beʔˈofanajim.
+S193	Time, numbers, and places	התאריך של הניתוח השתנה.	hataʔaʁˈiχ ʃˈel hanitˈuaχ hiʃtanˈa.
+S194	Time, numbers, and places	שמונה ועוד ארבע זה שתים עשרה.	ʃmˈone veʔˈod ʔˈaʁba zˈe ʃtˈem ʔesʁˈe.
+S195	Time, numbers, and places	לגור בכפר זה שקט ונעים.	laɡˈuʁ bakfˈaʁ zˈe ʃˈaket venaʔˈim.
+S196	Work, study, and technology	שלחתי לך מייל עם כל הפרטים.	ʃalˈaχti leχˈa mˈejl ʔˈim kˈol hapʁatˈim.
+S197	Work, study, and technology	תבדוק אם קיבלת את ההודעה שלי.	tivdˈok ʔˈim kibˈalta ʔˈet hahodaʔˈa ʃelˈi.
+S198	Work, study, and technology	המחשב נתקע, צריך להפעיל מחדש.	hamaχʃˈev nitkˈa, tsaʁˈiχ lehafʔˈil meχadˈaʃ.
+S199	Work, study, and technology	שכחתי את הסיסמה של החשבון.	ʃaχˈaχti ʔˈet hasismˈa ʃˈel haχeʃbˈon.
+S200	Work, study, and technology	בוא נדבר בצ׳אט או בשיחת וידאו.	bˈo nedabˈeʁ betʃˈet ʔˈo besiχˈat vˈideʔo.
+S201	Work, study, and technology	הפרויקט צריך להיות מוכן עד מחר.	hapʁojˈekt tsaʁˈiχ lihjˈot muχˈan ʔˈad maχˈaʁ.
+S202	Work, study, and technology	הישיבה עם הצוות ארכה שעתיים.	hajeʃivˈa ʔˈim hatsˈevet ʔaʁχˈa ʃeʔatˈajim.
+S203	Work, study, and technology	אני עובד מהבית ביום חמישי.	ʔanˈi ʔovˈed mehabˈajit bejˈom χamiʃˈi.
+S204	Work, study, and technology	קראתי כתבה מעניינת בעיתון.	kaʁˈati katavˈa meʔanjˈenet baʔitˈon.
+S205	Work, study, and technology	הצ׳אט בקבוצה מלא הודעות.	hatʃˈet bakvutsˈa malˈe hodaʔˈot.
+S206	Work, study, and technology	תשלח לי קישור לפגישה בזום.	tiʃlˈaχ lˈi kiʃˈuʁ lipɡiʃˈa bezˈum.
+S207	Work, study, and technology	הוא כתב את הדוח באנגלית.	hˈu katˈav ʔˈet hadˈuaχ beʔanɡlˈit.
+S208	Work, study, and technology	אני לומד לנגן על צ׳לו.	ʔanˈi lomˈed lenaɡˈen ʔˈal tʃelˈo.
+S209	Work, study, and technology	הספרייה סגורה לשיפוצים.	hasifʁijˈa sɡuʁˈa leʃiputsˈim.
+S210	Work, study, and technology	הבחינה בסטטיסטיקה הייתה קשה.	habχinˈa bastatˈistika hajtˈa kaʃˈa.
+S211	Work, study, and technology	קיבלתי צ׳ק מהמעסיק.	kibˈalti tʃˈek mehamaʔasˈik.
+S212	Work, study, and technology	המנהל אישר לי חופשה.	hamnahˈel ʔiʃˈeʁ lˈi χufʃˈa.
+S213	Work, study, and technology	צריך להדפיס את הטופס ולחתום.	tsaʁˈiχ lehadpˈis ʔˈet hatˈofes velaχtˈom.
+S214	Work, study, and technology	האפליקציה החדשה נוחה לשימוש.	haʔaplˈikˈatsja haχadaʃˈa nˈoχa leʃimˈuʃ.
+S215	Work, study, and technology	העדכון של התוכנה לקח זמן רב.	haʔidkˈun ʃˈel hatoχnˈa lakˈaχ zmˈan ʁˈav.
+S216	Work, study, and technology	האינטרנט איטי מאוד היום.	haʔinteʁnˈet ʔitˈi meʔˈod hajˈom.
+S217	Work, study, and technology	הוא עובד כמתכנת בחברת הייטק.	hˈu ʔovˈed kimtaχnˈet beχevʁˈat hajtˈek.
+S218	Work, study, and technology	תשמור את הקובץ בתיקייה הנכונה.	tiʃmˈoʁ ʔˈet hakˈovets batikijˈa haneχonˈa.
+S219	Work, study, and technology	היא כותבת על אופנה בז׳ורנל.	hˈi kotˈevet ʔˈal ʔofnˈa biʒoʁnˈel.
+S220	Work, study, and technology	הג׳וב החדש שלו מעניין מאוד.	hadʒˈob hˈeχadaʃ ʃelˈo meʔanjˈen meʔˈod.
+S221	Work, study, and technology	תצלם את המסמך ותשלח לי.	ttsalˈem ʔˈet hamismˈaχ vetiʃlˈaχ lˈi.
+S222	Work, study, and technology	המצגת מוכנה, נשאר לבדוק את השקפים.	hamatsˈeɡet muχanˈa, niʃʔˈaʁ livdˈok ʔˈet haʃkafˈim.
+S223	Work, study, and technology	המדפסת שוב נתקעה עם הנייר.	hamidpˈeset ʃˈuv nitkʔˈa ʔˈim hanjˈaʁ.
+S224	Work, study, and technology	קיבלתי ציון תשעים ושבע במבחן.	kibˈalti tsijˈun tiʃʔˈim veʃˈeva bemivχˈan.
+S225	Work, study, and technology	אני כותב בעזרת המקלדת לאט.	ʔanˈi kotˈev beʔezʁˈat hamiklˈedet leʔˈat.
+S226	Feelings and opinions	אני שמח מאוד שאתה כאן.	ʔanˈi samˈeaχ meʔˈod ʃeʔatˈa kˈan.
+S227	Feelings and opinions	אני קצת עצוב היום.	ʔanˈi ktsˈat ʔatsˈuv hajˈom.
+S228	Feelings and opinions	זה מתסכל כשלא מבינים אותי.	zˈe metaskˈel kʃelˈo mevinˈim ʔotˈi.
+S229	Feelings and opinions	אני גאה בך על מה שעשית.	ʔanˈi ɡeʔˈe beχˈa ʔˈal mˈa ʃeʔasˈita.
+S230	Feelings and opinions	אל תדאג, הכול יהיה בסדר.	ʔˈal tidʔˈaɡ, hakˈol jihjˈe besˈedeʁ.
+S231	Feelings and opinions	אני מפחד מכלבים גדולים.	ʔanˈi mefaχˈed miklavˈim ɡdolˈim.
+S232	Feelings and opinions	זה הפתיע אותי לטובה.	zˈe hiftˈia ʔotˈi letovˈa.
+S233	Feelings and opinions	אני כועס שלא אמרו לי.	ʔanˈi koʔˈes ʃelˈo ʔamʁˈu lˈi.
+S234	Feelings and opinions	אני מתרגש לקראת הטיול.	ʔanˈi mitʁaɡˈeʃ likʁˈat hatijˈul.
+S235	Feelings and opinions	תודה שהקשבת לי בסבלנות.	todˈa ʃehikʃˈavta lˈi besavlanˈut.
+S236	Feelings and opinions	הסרט הזה ריגש אותי מאוד.	hasˈeʁet hazˈe ʁiɡˈeʃ ʔotˈi meʔˈod.
+S237	Feelings and opinions	אני משועמם, בוא נעשה משהו.	ʔanˈi meʃuʔamˈam, bˈo naʔasˈe mˈaʃehu.
+S238	Feelings and opinions	זה לא הוגן בכלל.	zˈe lˈo hoɡˈen biχlˈal.
+S239	Feelings and opinions	אני מקווה שתצליח.	ʔanˈi mekavˈe ʃetatslˈiaχ.
+S240	Feelings and opinions	אני אוהב אותך מאוד.	ʔanˈi ʔohˈev ʔotχˈa meʔˈod.
+S241	Feelings and opinions	אני מתבייש לבקש עזרה.	ʔanˈi mitbajˈeʃ levakˈeʃ ʔezʁˈa.
+S242	Feelings and opinions	אני רגוע יותר אחרי הטיפול.	ʔanˈi ʁaɡˈua jotˈeʁ ʔaχaʁˈej hatipˈul.
+S243	Feelings and opinions	זה בדיוק מה שרציתי.	zˈe bedijˈuk mˈa ʃeʁatsˈiti.
+S244	Feelings and opinions	אני לא רוצה לדבר על זה עכשיו.	ʔanˈi lˈo ʁotsˈe ledabˈeʁ ʔˈal zˈe ʔaχʃˈav.
+S245	Feelings and opinions	אני מרגיש שאף אחד לא מקשיב.	ʔanˈi maʁɡˈiʃ ʃeʔˈaf ʔeχˈad lˈo makʃˈiv.
+S246	Feelings and opinions	זה היה יום ארוך ומעייף.	zˈe hajˈa jˈom ʔaʁˈoχ umʔajˈef.
+S247	Feelings and opinions	אני סקרן לשמוע מה קרה.	ʔanˈi sakʁˈan liʃmˈoa mˈa kaʁˈa.
+S248	Feelings and opinions	אני מתלבט בין שתי האפשרויות.	ʔanˈi mitlabˈet bˈen ʃtˈej haʔefʃaʁujˈot.
+S249	Feelings and opinions	אני מעריך את הסבלנות שלך.	ʔanˈi maʔaʁˈiχ ʔˈet hasavlanˈut ʃelχˈa.
+S250	Feelings and opinions	זה מרגיז אותי כשמפריעים לי.	zˈe maʁɡˈiz ʔotˈi kʃemafʁˈiʔim lˈi.
+S251	Leisure, nature, and less common sounds	הלכנו לשמוע הופעת ג׳אז בפארק.	halˈaχnu liʃmˈoa hofaʔˈat dʒˈez bapˈaʁk.
+S252	Leisure, nature, and less common sounds	בגן החיות ראינו ג׳ירפה וזברה.	beɡˈan haχajˈot ʁaʔˈinu dʒiʁpˈa uzibʁˈa.
+S253	Leisure, nature, and less common sounds	הוא קיבל צ׳ופר על העבודה הקשה.	hˈu kibˈel tʃupˈeʁ ʔˈal haʔavodˈa hakaʃˈa.
+S254	Leisure, nature, and less common sounds	טיילנו בג׳ונגל עם מדריך מקומי.	tijalnˈu badʒunɡˈel ʔˈim madʁˈiχ mekomˈi.
+S255	Leisure, nature, and less common sounds	עשיתי מסאז׳ בספא והרגשתי מצוין.	ʔasˈiti masˈaʒ basˈepa vehiʁɡˈaʃti metsujˈan.
+S256	Leisure, nature, and less common sounds	היא שמה ג׳ל בשיער לפני ההופעה.	hˈi sˈama dʒˈel baseʔˈaʁ lifnˈej hahofaʔˈa.
+S257	Leisure, nature, and less common sounds	צ׳רלי צ׳פלין היה שחקן מפורסם.	tʃeʁlˈi tʃaplˈin hajˈa saχkˈan mefuʁsˈam.
+S258	Leisure, nature, and less common sounds	הילד הכין קולאז׳ מתמונות ישנות.	hajˈeled heχˈin kolˈaʒ mitmunˈot jeʃanˈot.
+S259	Leisure, nature, and less common sounds	בפלאז׳ה בחוף היו המון אנשים.	biplaʒˈe baχˈof hajˈu hamˈon ʔanaʃˈim.
+S260	Leisure, nature, and less common sounds	הוא אוהב את הז׳אנר של סרטי מתח.	hˈu ʔohˈev ʔˈet haʒanˈeʁ ʃˈel siʁtˈej mˈetaχ.
+S261	Leisure, nature, and less common sounds	הסלט עם צ׳ילי וג׳ינג׳ר חריף מדי.	haselˈet ʔˈim tʃilˈi vedʒindʒˈeʁ χaʁˈif midˈaj.
+S262	Leisure, nature, and less common sounds	ז׳ני קנתה עגילי ביז׳ו בשוק.	ʒenˈi kantˈa ʔaɡilˈej biʒˈo baʃˈuk.
+S263	Leisure, nature, and less common sounds	שחינו בבריכה שעה שלמה.	saχˈinu babʁeχˈa ʃaʔˈa ʃlemˈa.
+S264	Leisure, nature, and less common sounds	קראתי ספר מתח עד שתיים בלילה.	kaʁˈati sˈefeʁ mˈetaχ ʔˈad ʃtˈajim balˈajla.
+S265	Leisure, nature, and less common sounds	הלכנו לסרט וקנינו צ׳יפס ופופקורן.	halˈaχnu lasˈeʁet vekanˈinu tʃˈips ufopkˈoʁn.
+S266	Leisure, nature, and less common sounds	אני אוהב לצייר נופים בצבעי מים.	ʔanˈi ʔohˈev letsajˈeʁ nofˈim betsivʔˈej majˈim.
+S267	Leisure, nature, and less common sounds	הקבוצה שלנו ניצחה שלוש אפס.	hakvutsˈa ʃelˈanu nitsχˈa ʃalˈoʃ ʔˈefes.
+S268	Leisure, nature, and less common sounds	בוא נטייל בפארק לפני השקיעה.	bˈo netajˈel bapˈaʁk lifnˈej haʃkiʔˈa.
+S269	Leisure, nature, and less common sounds	שמענו שירים ישנים ברדיו.	ʃamˈaʔnu ʃiʁˈim jeʃanˈim baʁˈadjo.
+S270	Leisure, nature, and less common sounds	הוא פתר תשבץ בעיתון של שישי.	hˈu patˈaʁ tiʃbˈets baʔitˈon ʃˈel ʃiʃˈi.
+S271	Leisure, nature, and less common sounds	הצפרדע קפצה לתוך הבריכה.	hatsfaʁdˈea kaftsˈa letˈoχ habʁeχˈa.
+S272	Leisure, nature, and less common sounds	הספינה שטה לאט אל הנמל.	hasfinˈa ʃˈata leʔˈat ʔˈel hanamˈel.
+S273	Leisure, nature, and less common sounds	שתלנו פרחים צבעוניים בגינה.	ʃatˈalnu pʁaχˈim tsivʔonijˈim baɡinˈa.
+S274	Leisure, nature, and less common sounds	השמש זורחת מעל ההרים.	haʃˈemeʃ zoʁˈaχat meʔˈal hehaʁˈim.
+S275	Leisure, nature, and less common sounds	הציפורים שרות בחלון כל בוקר.	hatsipoʁˈim ʃaʁˈot baeχalˈon kˈol bˈokeʁ.
+S276	Leisure, nature, and less common sounds	הזברה רצה מהר מהאריה.	hazabaʁˈa ʁˈatsa mahˈeʁ mehaʔaʁjˈe.
+S277	Leisure, nature, and less common sounds	סבתא סרגה לי צעיף צמר.	savtˈa saʁɡˈa lˈi tsaʔˈif tsˈemeʁ.
+S278	Leisure, nature, and less common sounds	הצלם צילם תמונה של כל המשפחה.	hatsalˈam tsilˈem tmunˈa ʃˈel kˈol hamiʃpaχˈa.
+S279	Leisure, nature, and less common sounds	שחקנית הטניס זכתה בתחרות.	saχkanˈit hatnˈis zaχtˈa betaχaʁˈut.
+S280	Leisure, nature, and less common sounds	הם רקדו עד אמצע הלילה.	hˈem ʁakdˈu ʔˈad ʔˈemtsa halˈajla.
+S281	Leisure, nature, and less common sounds	הזמנו כרטיסים להצגה בתיאטרון.	hizmanˈu kaʁtisˈim lehatsaɡˈa bateʔatʁˈon.
+S282	Leisure, nature, and less common sounds	הדג שחה בתוך האקווריום.	hadˈaɡ saχˈa betˈoχ haʔakvaʁjˈum.
+S283	Leisure, nature, and less common sounds	הוא שרק שיר מוכר בדרך הביתה.	hˈu ʃaʁˈak ʃˈiʁ mukˈaʁ badˈeʁeχ habajtˈa.
+S284	Leisure, nature, and less common sounds	שקית הקניות נקרעה בדרך.	sakˈit haknijˈot nikʁʔˈa badˈeʁeχ.
+S285	Leisure, nature, and less common sounds	הפרפר נח על הפרח הצהוב.	hapaʁpˈaʁ nˈaχ ʔˈal hapˈeʁaχ hatsahˈov.
+S286	Leisure, nature, and less common sounds	תזרוק לי את הכדור, אני תופס.	tizʁˈok lˈi ʔˈet hakadˈuʁ, ʔanˈi tofˈes.
+S287	Leisure, nature, and less common sounds	הסבון מריח כמו לבנדר.	hasabˈon meʁˈiaχ kmˈo levˈendeʁ.
+S288	Leisure, nature, and less common sounds	שמעתי רעם חזק בלילה.	ʃamˈaʔti ʁˈaʔam χazˈak balˈajla.
+S289	Leisure, nature, and less common sounds	ההר מכוסה שלג לבן.	hahˈaʁ meχusˈe ʃˈeleɡ lavˈan.
+S290	Leisure, nature, and less common sounds	הוא עשה צ׳ק אפ אצל הרופא.	hˈu ʔasˈa tʃˈek ʔˈap ʔetsˈel haʁofˈe.
+S291	Leisure, nature, and less common sounds	בטיול השנתי טיפסנו על מצדה.	batijˈul haʃnatˈi tˈipˈasnu ʔˈal metsdˈa.
+S292	Leisure, nature, and less common sounds	השעון המעורר צלצל בשש.	haʃaʔˈon hamʔoʁˈeʁ tsiltsˈel beʃˈeʃ.
+S293	Leisure, nature, and less common sounds	המאמן נתן לו מסאז׳ אחרי הריצה.	hamʔamˈen natˈan lˈo mesˈaʒ ʔaχaʁˈej haʁitsˈa.
+S294	Leisure, nature, and less common sounds	נסענו בג׳יפ במדבר יהודה.	nasˈaʔnu bedʒˈip bemidbˈaʁ jehudˈa.
+S295	Leisure, nature, and less common sounds	תצטרף אלינו למשחק כדורסל?	titstaʁˈef ʔelˈenu lemisχˈak kaduʁesˈal?
+S296	Leisure, nature, and less common sounds	אני שומע פודקאסט בזמן ההליכה.	ʔanˈi ʃomˈea pudkˈast bizmˈan hahaliχˈa.
+S297	Leisure, nature, and less common sounds	סבתא שלי ממרוקו מבשלת קוסקוס.	savtˈa ʃelˈi mimaʁˈoko mevaʃˈelet kˈoskus.
+S298	Leisure, nature, and less common sounds	שזיפים ותאנים מבשילים בקיץ.	ʃazifˈim utʔˈenim mavʃilˈim bakˈajits.
+S299	Leisure, nature, and less common sounds	הצבי קפץ מעל הגדר.	hatsvˈi kafˈats meʔˈal haɡadˈeʁ.
+S300	Leisure, nature, and less common sounds	בפעם הבאה אספר לך עוד סיפור.	bapˈaʔam habaʔˈa ʔasapˈeʁ leχˈa ʔˈod sipˈuʁ.
