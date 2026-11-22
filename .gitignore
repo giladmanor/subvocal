@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# Data and models (personal voice data must not go to a public repo)
+data/
+recordings/
+models/
+checkpoints/
+*.wav
+*.flac
+*.mp3
+*.safetensors
+*.bin
+
+# macOS
+.DS_Store
