@@ -35,21 +35,26 @@ On macOS, give your terminal access to the microphone before you record.
 
 > **Caution:** Recordings are personal data. Keep them in `data/`. Git does not include this folder.
 
-1. Record the probe list:
-   `python -m subvocal.record --list prompts/probe.tsv --out data/dana/probe`
+Each recording run asks for the speaker name and makes a new session folder:
+`data/user-recordings/<speaker>-<YYYY-MM-DD>-<HHMMSS>/`. In the steps below, `$SESSION` is that folder.
+
+1. Record the probe list (the default list):
+   `python -m subvocal.record`
 2. Transcribe the recordings:
-   `python -m subvocal.transcribe --audio data/dana/probe --out data/dana/probe/hyp.tsv`
+   `python -m subvocal.transcribe --audio $SESSION --out $SESSION/hyp.tsv`
 3. Make the speaker profile:
-   `python -m subvocal.diagnose --hyp data/dana/probe/hyp.tsv --profile data/dana/profile.json`
+   `python -m subvocal.diagnose --hyp $SESSION/hyp.tsv --profile data/user-recordings/dana-profile.json`
 4. Select the first sentences:
-   `python -m subvocal.select --n 40 --profile data/dana/profile.json --out data/dana/s1.tsv`
+   `python -m subvocal.select --n 40 --profile data/user-recordings/dana-profile.json --out data/user-recordings/dana-next.tsv`
 5. Record the sentences:
-   `python -m subvocal.record --list data/dana/s1.tsv --out data/dana/s1`
+   `python -m subvocal.record --speaker dana --list data/user-recordings/dana-next.tsv`
 6. Transcribe them, and update the profile:
-   `python -m subvocal.transcribe --audio data/dana/s1 --out data/dana/s1/hyp.tsv`
-   `python -m subvocal.diagnose --refs prompts/sentences.tsv --hyp data/dana/s1/hyp.tsv --profile data/dana/profile.json`
-7. Write the recorded IDs to `data/dana/recorded.txt`.
-8. Select the next sentences with `--done data/dana/recorded.txt`, and do steps 5 to 8 again.
+   `python -m subvocal.transcribe --audio $SESSION --out $SESSION/hyp.tsv`
+   `python -m subvocal.diagnose --refs prompts/sentences.tsv --hyp $SESSION/hyp.tsv --profile data/user-recordings/dana-profile.json`
+7. Add the recorded IDs to `data/user-recordings/dana-recorded.txt`.
+8. Select the next sentences with `--done data/user-recordings/dana-recorded.txt`, and do steps 5 to 8 again.
+
+To continue a stopped session, run `python -m subvocal.record --out $SESSION`. The script skips the items that it recorded before.
 
 To check the coverage of the full sentence set, run `python -m subvocal.coverage`.
 
