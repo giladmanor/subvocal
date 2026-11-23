@@ -76,12 +76,25 @@ def list_sessions() -> list[dict]:
     return out
 
 
+def _accepted(item: dict) -> set[str]:
+    return {normalize(item["plain"]), *normalize(item.get("accept", "")).split()}
+
+
 def is_match(item: dict, hyp: str) -> bool:
-    """True if the transcript has the correct word (probe) or the correct sentence."""
+    """True if the transcript is the correct word (probe) or the correct sentence, with nothing more."""
     if item.get("carrier"):
-        accepted = {item["plain"], *normalize(item.get("accept", "")).split()}
-        return bool(accepted & set(strip_carrier(hyp).split()))
+        words = strip_carrier(hyp).split()
+        return len(words) == 1 and words[0] in _accepted(item)
     return normalize(hyp) == normalize(item["plain"])
+
+
+def has_extra(item: dict, hyp: str) -> bool:
+    """True if the transcript has the correct probe word and also other sounds.
+
+    Example: "ד... גר" for "גר". This can be a false start or a repetition of the speaker.
+    """
+    words = strip_carrier(hyp).split()
+    return bool(item.get("carrier")) and len(words) > 1 and bool(_accepted(item) & set(words))
 
 
 _PHONEMIZER: Phonemizer | None = None
@@ -118,8 +131,9 @@ def load_session(name: str) -> dict:
         if i not in by_id:
             continue
         match = is_match(by_id[i], h)
-        sound = not match and same_sound(prompts.get(i, {}).get("phonemes", ""), h, bool(by_id[i].get("carrier")))
-        results[i] = {"hyp": h, "match": match, "same_sound": sound}
+        extra = not match and has_extra(by_id[i], h)
+        sound = not match and not extra and same_sound(prompts.get(i, {}).get("phonemes", ""), h, bool(by_id[i].get("carrier")))
+        results[i] = {"hyp": h, "match": match, "extra": extra, "same_sound": sound}
     return {
         "name": name, "meta": {k: v for k, v in meta.items() if k != "items"}, "items": items,
         "duration": end_frame / rate, "takes": compute_takes(events, end_frame, rate),
