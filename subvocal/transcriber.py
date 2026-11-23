@@ -64,7 +64,15 @@ def _write_hyp(folder: Path, texts: dict[str, str]) -> None:
     write_tsv(folder / "hyp.tsv", [{"id": i, "text": texts[i]} for i in sorted(texts)], ["id", "text"])
 
 
-def start_transcription(name: str) -> dict:
+def _after(on_done, name: str) -> None:
+    if on_done:
+        try:
+            on_done(name)
+        except Exception:  # noqa: BLE001 - the transcription is complete; report the error only
+            traceback.print_exc()
+
+
+def start_transcription(name: str, on_done=None) -> dict:
     """Transcribe all the <id>.wav files of a session again."""
     folder = review.session_dir(name)
     job = review.JOBS.get(name)
@@ -81,6 +89,7 @@ def start_transcription(name: str) -> dict:
             job["done"] += 1
         _write_hyp(folder, texts)
         job["state"] = "done"
+        _after(on_done, name)
 
     WORKER.submit(run, lambda msg: job.update(state="error", error=msg))
     return job
@@ -89,7 +98,9 @@ def start_transcription(name: str) -> dict:
 class LiveTranscription:
     """Transcribe the cards of a session while the speaker records."""
 
-    def __init__(self, name: str, folder: Path, recorder, total: int):
+    def __init__(self, name: str, folder: Path, recorder, total: int, on_done=None):
+        self.name = name
+        self.on_done = on_done
         self.folder = folder
         self.rec = recorder
         self.results: dict[str, tuple[int, str]] = {}  # id -> (start frame of the take, text)
@@ -141,6 +152,7 @@ class LiveTranscription:
                     self.job["done"] += 1
             _write_hyp(self.folder, texts)
             self.job["state"] = "done"
+            _after(self.on_done, self.name)
 
         WORKER.submit(run, self._fail)
 

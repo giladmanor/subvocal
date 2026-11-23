@@ -9,7 +9,7 @@ The app records at the native sample rate of the microphone (usually 48 kHz). A 
 conversion during the recording can drop audio. The app converts to 16 kHz only when it
 cuts the card files.
 
-Session folder: data/user-recordings/<speaker>-<YYYY-MM-DD>-<HHMMSS>/
+Recording folder: data/user-recordings/<session>/<part>/ (see subvocal/groups.py)
     full-session.flac   the full continuous recording, at the native rate
     events.json         the card flips and pauses, in native frames (updated after each flip)
     session.json        the speaker, the prompt list, the items, and a clock check
@@ -19,7 +19,7 @@ Session folder: data/user-recordings/<speaker>-<YYYY-MM-DD>-<HHMMSS>/
 
 Usage:
     python -m subvocal.record                       # opens the app
-    python -m subvocal.record --split <session>     # cut a session again (for example, after a crash)
+    python -m subvocal.record --split <part folder> # cut a recording again (for example, after a crash)
 """
 
 from __future__ import annotations
@@ -40,9 +40,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
-from . import review, transcriber
+from . import groups, review, transcriber
 from .transcriber import LiveTranscription
-from .corpus import PROBE_TSV, read_tsv
+from .corpus import read_tsv
 from .phonetics import REPO_ROOT
 
 RECORDINGS = review.RECORDINGS
@@ -53,12 +53,6 @@ CHROME_PROFILE = Path.home() / "Library" / "Caches" / "subvocal-chrome"
 OUT_RATE = 16000
 CARRIER = "המילה היא"
 CARRIER_NIQQUD = unicodedata.normalize("NFC", "הַמִּילָּה הִיא")
-
-
-def safe_name(name: str) -> str:
-    """Make a speaker name safe for a folder name. Keep Hebrew and Latin letters and digits."""
-    name = re.sub(r"[^\w-]+", "-", name.strip(), flags=re.UNICODE).strip("-_")
-    return name.lower()
 
 
 SETTINGS = REPO_ROOT / "data" / "settings.json"
@@ -76,18 +70,6 @@ def save_settings(values: dict) -> None:
         raise ValueError("the number of sentences must be from 5 to 300")
     SETTINGS.parent.mkdir(parents=True, exist_ok=True)
     SETTINGS.write_text(json.dumps({"plan_sentences": n}, indent=1))
-
-
-def list_options() -> list[dict]:
-    """The prompt lists that the app offers: the probe, the sentences, and the selections in data/."""
-    paths = [PROBE_TSV, REPO_ROOT / "prompts" / "sentences.tsv"]
-    if RECORDINGS.exists():
-        paths += sorted(RECORDINGS.glob("*.tsv"))
-    out = []
-    for p in paths:
-        if p.exists():
-            out.append({"path": str(p.relative_to(REPO_ROOT)), "count": len(read_tsv(p))})
-    return out
 
 
 def items_from(rows: list[dict]) -> list[dict]:
@@ -196,24 +178,24 @@ def split_session(folder: Path) -> dict:
 
 
 class Session:
-    def __init__(self, speaker: str, list_path: Path):
-        self.speaker = safe_name(speaker)
-        if not self.speaker:
-            raise ValueError("speaker name is empty")
-        stamp = datetime.now().strftime("%Y-%m-%d-%H%M%S")
-        self.folder = RECORDINGS / f"{self.speaker}-{stamp}"
-        self.folder.mkdir(parents=True, exist_ok=True)
+    """The recording of one part of a training session. See subvocal/groups.py."""
+
+    def __init__(self, group: str, part: str, on_transcribed=None):
+        self.group, self.part = group, part
+        self.name = f"{group}/{part}"
+        self.folder, list_path, self.speaker = groups.prepare_part(group, part)
         shutil.copyfile(list_path, self.folder / "prompts.tsv")
         self.items = items_from(read_tsv(list_path))
         self.events: list[dict] = []
         self.rec = Recorder(self.folder / "full-session.flac")
         self.meta = {
-            "speaker": self.speaker, "list": str(list_path.relative_to(REPO_ROOT)),
+            "speaker": self.speaker, "group": group, "part": part,
+            "list": str(list_path.relative_to(REPO_ROOT)),
             "started": datetime.now().isoformat(timespec="seconds"),
             "rate": self.rec.rate, "out_rate": OUT_RATE, "items": self.items,
         }
         self._write_meta()
-        self.live = LiveTranscription(self.folder.name, self.folder, self.rec, len(self.items))
+        self.live = LiveTranscription(self.name, self.folder, self.rec, len(self.items), on_transcribed)
         self.rec.start()
 
     def _write_meta(self) -> None:
@@ -245,7 +227,8 @@ class Session:
         self.live.finish(kept)
         result["missing"] = [it["id"] for it in self.items if it["id"] not in result["ids"]]
         result["folder"] = str(self.folder.relative_to(REPO_ROOT))
-        result["name"] = self.folder.name
+        result["name"] = self.name
+        result["group"] = self.group
         result["seconds"] = round(audio_s)
         result["clock"] = self.meta["clock"]
         return result
@@ -273,41 +256,61 @@ class App:
             self._stop_timer.cancel()
             self._stop_timer = None
 
+    def plan(self, name: str) -> dict:
+        """The sentence list of a session and its statistics. Make the list if it does not exist."""
+        from .plan import make_list
+
+        folder = groups.group_dir(name)
+        cache = folder / "plan.json"
+        has_list = (folder / groups.LIST_FILE).exists()
+        if has_list and cache.exists():
+            return json.loads(cache.read_text())
+        result = make_list(name, int(load_settings()["plan_sentences"]), keep=has_list)
+        cache.write_text(json.dumps(result, ensure_ascii=False, indent=1))
+        return result
+
+    def after_transcription(self, name: str) -> None:
+        """After the word test is transcribed, make a new sentence list (in the worker thread)."""
+        group, _, part = name.partition("/")
+        if part == "words":
+            folder = groups.group_dir(group)
+            (folder / "plan.json").unlink(missing_ok=True)
+            (folder / groups.LIST_FILE).unlink(missing_ok=True)
+            self.plan(group)
+
     def handle(self, path: str, body: dict) -> dict:
         if path != "/api/bye":
             self.cancel_stop()
-        # The review calls do not touch the recording session.
-        if path == "/api/sessions":
-            return {"sessions": review.list_sessions()}
+        # These calls do not touch the recording.
+        if path == "/api/groups":
+            return {"groups": groups.list_groups(), "speakers": groups.speakers()}
+        if path == "/api/group/new":
+            return {"name": groups.create_group(body.get("speaker", ""))}
+        if path.startswith("/api/group/"):
+            return groups.group_detail(path.removeprefix("/api/group/"))
         if path.startswith("/api/session/"):
             return review.load_session(path.removeprefix("/api/session/"))
         if path == "/api/transcribe":
-            return transcriber.start_transcription(body["name"])
+            return transcriber.start_transcription(body["name"], self.after_transcription)
         if path == "/api/jobs":
             return {"jobs": {k: v for k, v in review.JOBS.items() if v.get("state") in ("live", "running", "error")}}
         if path == "/api/settings":
             if body:
                 save_settings({**load_settings(), **body})
             return load_settings()
-        if path == "/api/profile":
-            from .plan import profile_sounds
-            return profile_sounds(safe_name(body["speaker"]))
+        if path == "/api/sounds":
+            from .plan import session_sounds
+            return session_sounds(body["name"])
         if path == "/api/plan":
-            from .plan import make_plan
-            return make_plan(safe_name(body["speaker"]), int(load_settings()["plan_sentences"]))
+            return self.plan(body["name"])
         with self.lock:
             s = self.session
-            if path == "/api/config":
-                return {"lists": list_options(), "default": str(PROBE_TSV.relative_to(REPO_ROOT))}
             if path == "/api/start":
                 if s is not None:
                     s.finish()
                     self.session = None
-                list_path = (REPO_ROOT / body["list"]).resolve()
-                if REPO_ROOT not in list_path.parents:
-                    raise ValueError("the list must be in the repository")
-                self.session = Session(body.get("speaker", ""), list_path)
-                return {"folder": str(self.session.folder.relative_to(REPO_ROOT)), "items": self.session.items}
+                self.session = Session(body["group"], body["part"], self.after_transcription)
+                return {"name": self.session.name, "speaker": self.session.speaker, "items": self.session.items}
             if path == "/api/status":
                 if s is None:
                     return {"recording": False}
@@ -353,12 +356,12 @@ def make_handler(app: App):
                 app.schedule_stop()
 
         def _file(self, path: str) -> None:
-            """Serve an audio file of a session: /files/<session>/<file>."""
+            """Serve an audio file of a recording: /files/<session>/<part>/<file>."""
             parts = path.removeprefix("/files/").split("/")
             try:
-                if len(parts) != 2 or not re.fullmatch(r"[\w.-]+\.(wav|flac)", parts[1]):
+                if len(parts) != 3 or not re.fullmatch(r"[\w.-]+\.(wav|flac)", parts[2]):
                     raise ValueError("bad file name")
-                f = review.session_dir(parts[0]) / parts[1]
+                f = review.session_dir(f"{parts[0]}/{parts[1]}") / parts[2]
                 ctype = mimetypes.guess_type(f.name)[0] or "application/octet-stream"
                 self._send(200, f.read_bytes(), ctype)
             except (ValueError, FileNotFoundError):

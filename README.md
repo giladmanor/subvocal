@@ -37,55 +37,84 @@ On macOS, give your terminal access to the microphone before you record.
 > **Caution:** Recordings are personal data. Keep them in `data/`. Git does not include this folder.
 
 The recorder is a card app. `python -m subvocal.record` opens it in a Chrome window with no
-address bar. The app asks for the speaker name and the prompt list (the default is the probe list).
-The microphone stays on for the full session, and the speaker reads one card at a time.
+address bar. The microphone stays on for the full recording, and the speaker reads one card at a time.
 
 | Key | Action |
 |-----|--------|
 | Space, Enter, or ← | Go to the next card |
 | → or Backspace | Go back and read the card again (the last take is saved) |
 | P | Pause, or continue |
-| Esc | End the session |
+| Esc | End the recording |
 
-Each session makes a new folder: `data/user-recordings/<speaker>-<YYYY-MM-DD>-<HHMMSS>/`.
-The folder contains `full-session.flac`, `events.json` (the card flips), `session.json`,
-`prompts.tsv`, and one `<id>.wav` file for each card. In the steps below, `$SESSION` is that folder.
+### Training sessions
 
-1. Open the recorder, and record the probe list (the default list):
-   `python -m subvocal.record`
-2. The app transcribes each card while the speaker records the next card. At the end of the
-   session, it transcribes the remaining cards. A bar at the top of the window shows the progress.
-3. Click **הקלטות קודמות**. When the transcription of a session is complete, its row has the
-   button **רשימת משפטים לפי האבחון**. Click it.
-4. The panel shows the problem sounds of the speaker. At the same time, the app makes the
-   sentence list. When the list is ready, click **התחלת הקלטת משפטים**. The session starts
-   immediately, with the same speaker.
-5. After the session, do step 3 again. The next list does not include the recorded sentences.
+The home screen shows the list of training sessions. Each session has two parts:
+
+1. **The word test** (`prompts/probe.tsv`): 44 short words that test all the sounds. The test
+   finds the sounds that the model gets wrong for this speaker.
+2. **The sentences**: the app selects them from the word test of the session. The list has more
+   occurrences of the problem sounds. It does not include the sentences that the speaker
+   recorded in earlier sessions.
+
+To start a session, type the speaker name and click **התחלת מבחן מילים**. The word test starts.
+
+The app transcribes each card while the speaker records the next card. At the end of the
+recording, it transcribes the remaining cards. A bar at the top of the window shows the progress.
+
+After a recording, the app shows the session card. The card shows:
+
+- the status of each part, and the transcription results;
+- the problem sounds from the word test;
+- a button to record each part, or to record it again;
+- a button to see the labels of each part.
+
+When the word test is transcribed, the app makes the sentence list. Then the sentence part starts.
+
+> **Note:** When you record a part again, the app moves the earlier recording to `_old/` in the
+> session folder. It does not delete it. A new word test also makes a new sentence list.
 
 The number of sentences in the list is a setting (default: 40). To change it, click **הגדרות**
-on the start screen. The app keeps the settings in `data/settings.json`.
+on the home screen. The app keeps the settings in `data/settings.json`.
 
-The list comes from all the transcribed sessions of the speaker, probe and sentences.
-The app writes `data/user-recordings/<speaker>-profile.json` and `<speaker>-next.tsv`.
-To do the same steps from the command line, run `python -m subvocal.plan --speaker dana --n 40`.
+### Session folder
 
-The cards show the text with niqqud.
+```
+data/user-recordings/<speaker>-<YYYY-MM-DD>-<HHMMSS>/
+    group.json          the speaker and the start time
+    words/              the word test
+    sentences/          the sentences
+    sentence-list.tsv   the sentences that the app selected
+    profile.json        the speaker profile from the word test
+    _old/               the earlier recordings of a part
+```
 
-To see the labels of a session, click **הקלטות קודמות** on the start screen, or **הצגת התוויות**
-at the end of a session. The review screen shows:
+Each part folder contains `full-session.flac`, `events.json` (the card flips), `session.json`,
+`prompts.tsv`, one `<id>.wav` file for each card, and `hyp.tsv` (the transcripts).
 
-- the waveform of the full session, with the region of each card;
+To make the sentence list from the command line, run
+`python -m subvocal.plan --session <session folder name> --n 40`.
+
+### Review screen
+
+To see the labels of a part, click **הצגת התוויות** on the session card. The review screen shows:
+
+- the waveform of the full recording, with the region of each card;
 - the takes that the app did not keep (the speaker went back to the card);
 - the start and the length of each card file;
-- the transcript of each card and a mark: ✓ (the same text), ≈ (the same sound, a different
-  spelling), + (the correct word with extra sounds), or ✗ (a different sound).
+- the transcript of each card, and a mark:
 
-To transcribe a session again, click **תמלול מחדש** on the review screen.
+| Mark | Meaning |
+|------|---------|
+| ✓ | The transcript is the same as the text. |
+| typo | The same sound, with a different spelling. |
+| **+** (large) | The correct word, with extra sounds (for example, a false start). |
+| a musical note with an X | A different sound. |
 
 Click a row or a region to play it. Use ↑ and ↓ to go through the cards, and Space to play or stop.
+To transcribe a part again, click **תמלול מחדש**.
 
-If the app stops before the end of a session, the recording and the card flips stay in the folder.
-To make the card files again, run `python -m subvocal.record --split $SESSION`.
+If the app stops before the end of a recording, the recording and the card flips stay in the folder.
+To make the card files again, run `python -m subvocal.record --split <part folder>`.
 
 To check the coverage of the full sentence set, run `python -m subvocal.coverage`.
 

@@ -63,24 +63,46 @@
     padding: 1px 6px; color: var(--muted); background: var(--panel);
   }
 
-  /* ---------- setup ---------- */
-  #setup { align-items: center; justify-content: center; }
-  .setup-box {
-    width: min(460px, calc(100% - 32px)); background: var(--panel);
-    border: 1px solid var(--line); border-radius: 24px; padding: 36px; box-shadow: var(--shadow);
-  }
-  .brand { font-size: 15px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); direction: ltr; text-align: right; }
-  h1 { font-size: 34px; margin: 6px 0 28px; font-weight: 700; }
+  /* ---------- home ---------- */
+  .brand { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); direction: ltr; text-align: right; }
+  h1 { font-size: 30px; margin: 4px 0 0; font-weight: 700; }
+  h2 { font-size: 19px; margin: 0 0 6px; }
   label { display: block; font-size: 14px; color: var(--muted); margin: 18px 0 8px; }
-  input, select {
-    width: 100%; font: inherit; font-size: 20px; padding: 12px 14px; border-radius: 12px;
+  input {
+    width: 100%; font: inherit; font-size: 18px; padding: 12px 14px; border-radius: 12px;
     border: 1.5px solid var(--line); background: var(--card); color: var(--ink); outline: none;
   }
-  input:focus, select:focus { border-color: var(--accent); }
-  select { direction: ltr; font-size: 16px; }
-  #startBtn { width: 100%; margin-top: 28px; font-size: 20px; padding: 16px; }
-  .note { font-size: 13px; color: var(--muted); margin-top: 14px; line-height: 1.5; }
-  .error { color: var(--rec); font-size: 14px; min-height: 1.2em; margin-top: 10px; }
+  input:focus { border-color: var(--accent); }
+  .note { font-size: 13px; color: var(--muted); line-height: 1.5; margin: 0 0 14px; }
+  .error { color: var(--rec); font-size: 14px; min-height: 1.2em; margin-top: 8px; }
+  .box { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 20px 22px; }
+  .new-box { margin-bottom: 26px; box-shadow: var(--shadow); }
+  .new-row { display: flex; gap: 10px; }
+  .new-row input { flex: 1; }
+  .section-title { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .chip { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; padding: 4px 10px; border-radius: 99px; background: var(--line); color: var(--muted); white-space: nowrap; }
+  .chip.ok { background: color-mix(in srgb, var(--accent) 20%, transparent); color: var(--accent); }
+  .chip.run { background: var(--accent); color: var(--accent-ink); }
+  .chip b { color: inherit; }
+
+  /* ---------- session (group) screen ---------- */
+  #group { overflow: auto; }
+  .steps { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0 14px; }
+  @media (max-width: 760px) { .steps { grid-template-columns: 1fr; } }
+  .step { display: flex; flex-direction: column; gap: 12px; }
+  .step.off { opacity: .6; }
+  .step-num { display: inline-flex; width: 26px; height: 26px; border-radius: 50%; align-items: center; justify-content: center; background: var(--line); color: var(--muted); font-size: 14px; font-weight: 700; margin-left: 8px; }
+  .step.done .step-num { background: var(--accent); color: var(--accent-ink); }
+  .step-head { display: flex; align-items: center; }
+  .step-head h2 { margin: 0; }
+  .step .status { font-size: 14px; color: var(--muted); line-height: 1.5; }
+  .step .buttons { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
+  .step .buttons button { font-size: 15px; padding: 10px 16px; }
+  .warn-line { color: var(--rec); font-size: 13px; }
+  .sounds table { width: 100%; }
+  .sounds td, .sounds th { padding: 6px 8px; text-align: right; font-size: 14px; position: static; background: none; }
+  .sounds .bar { height: 8px; border-radius: 4px; background: var(--rec); opacity: .7; }
 
   /* ---------- session ---------- */
   header {
@@ -144,33 +166,21 @@
   .dialog p { margin: 0 0 22px; color: var(--muted); }
   .dialog .controls { justify-content: flex-start; }
 
-  /* ---------- done ---------- */
-  #done { align-items: center; justify-content: center; text-align: center; }
-  .check {
-    width: 84px; height: 84px; border-radius: 50%; background: var(--accent); color: var(--accent-ink);
-    display: flex; align-items: center; justify-content: center; font-size: 44px; margin: 0 auto 22px;
-  }
-  .stats { display: flex; gap: 14px; justify-content: center; margin: 26px 0; }
-  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px 22px; min-width: 120px; }
-  .stat b { display: block; font-size: 30px; font-variant-numeric: tabular-nums; }
-  .stat span { font-size: 13px; color: var(--muted); }
-  .path { direction: ltr; font-family: ui-monospace, Menlo, monospace; font-size: 13px; color: var(--muted); margin-bottom: 26px; }
-  .warn { color: var(--rec); font-size: 14px; margin: -10px 0 20px; }
-  .link { background: none; color: var(--accent); padding: 8px 0; font-size: 15px; font-weight: 500; margin-top: 10px; }
+  .link { background: none; color: var(--accent); padding: 8px 0; font-size: 15px; font-weight: 500; }
 
   /* ---------- niqqud ---------- */
   .text, .carrier, .r-text { font-feature-settings: "mark", "mkmk"; }
   .text { line-height: 1.3; }
   .card.sentence .text { line-height: 1.55; }
 
-  /* ---------- sessions list ---------- */
-  #sessions { overflow: auto; }
+  /* ---------- session list ---------- */
+  #home { overflow: auto; }
   .page { width: min(980px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 40px; }
   .page-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
   .page-head h1 { margin: 0; font-size: 28px; }
   .s-list { display: grid; gap: 10px; }
   .s-row {
-    display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 16px;
+    display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 16px;
     background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px 18px; cursor: pointer;
   }
   .s-row:hover { border-color: var(--accent); }
@@ -203,16 +213,15 @@
   .r-id { direction: ltr; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; }
   .r-text { font-size: 19px; }
   .r-hyp { font-size: 15px; }
-  .mark-ok { color: var(--accent); font-weight: 700; }
-  .mark-bad { color: var(--rec); font-weight: 700; }
-  .mark-warn { color: #c98a00; font-weight: 700; }
+  .mark-ok { color: var(--accent); font-weight: 700; font-size: 18px; }
+  .mark-typo { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 6px; border: 1.5px solid #c98a00; color: #c98a00; direction: ltr; letter-spacing: .03em; }
+  .mark-plus { color: #c98a00; font-weight: 800; font-size: 28px; line-height: 18px; display: inline-block; vertical-align: middle; }
+  .mark-note { width: 24px; height: 24px; vertical-align: middle; color: var(--ink); }
+  .legend .mark-plus { font-size: 30px; line-height: 12px; }
 
   /* ---------- plan panel ---------- */
   .modal { position: fixed; z-index: 20; padding: 16px; }
-  .panel .start-row { justify-content: space-between; border-top: 1px solid var(--line); padding-top: 14px; }
   .panel .hint { font-size: 13px; color: var(--muted); }
-  .s-row { grid-template-columns: 1fr auto auto auto; }
-  .s-plan { font-size: 13px; padding: 6px 12px; border-radius: 10px; }
   .s-prog { grid-column: 1 / -1; }
 
   /* ---------- transcription progress ---------- */
@@ -244,22 +253,40 @@
 </head>
 <body>
 
-<!-- ============ setup ============ -->
-<section id="setup" class="screen on">
-  <div class="setup-box">
-    <div class="brand">Subvocal</div>
-    <h1>הקלטה חדשה</h1>
-    <label for="speaker">שם הדובר</label>
-    <input id="speaker" autocomplete="off" placeholder="לדוגמה: דנה" autofocus>
-    <label for="list">רשימת הקלטה</label>
-    <select id="list"></select>
-    <button id="startBtn" class="primary">התחלה</button>
-    <div class="error" id="setupError"></div>
-    <div class="note">המיקרופון פועל לאורך כל ההקלטה, מההתחלה ועד הסיום. אפשר לחזור לכרטיס ולקרוא אותו שוב.</div>
-    <div style="display:flex;justify-content:space-between">
-      <button class="link" id="openSessionsBtn">הקלטות קודמות ←</button>
+<!-- ============ home: the list of training sessions ============ -->
+<section id="home" class="screen on">
+  <div class="page">
+    <div class="page-head">
+      <div><div class="brand">Subvocal</div><h1>סשנים</h1></div>
       <button class="link" id="settingsBtn">⚙ הגדרות</button>
     </div>
+    <div class="box new-box">
+      <h2>סשן חדש</h2>
+      <p class="note">כל סשן מתחיל במבחן מילים, שמוצא את הצלילים שהמודל מתקשה בהם.
+        אחר כך הדובר קורא משפטים שנבחרו לפי התוצאות. המיקרופון פועל לאורך כל הקלטה.</p>
+      <div class="new-row">
+        <input id="speaker" list="speakerList" autocomplete="off" placeholder="שם הדובר, לדוגמה: דנה" autofocus>
+        <datalist id="speakerList"></datalist>
+        <button class="primary" id="newBtn">התחלת מבחן מילים</button>
+      </div>
+      <div class="error" id="homeError"></div>
+    </div>
+    <div class="s-list" id="gList"></div>
+  </div>
+</section>
+
+<!-- ============ one training session ============ -->
+<section id="group" class="screen">
+  <div class="page">
+    <div class="page-head">
+      <div><div class="brand" id="gDate"></div><h1 id="gTitle"></h1></div>
+      <button class="ghost" id="groupBackBtn">→ סשנים</button>
+    </div>
+    <div class="steps">
+      <div class="box step" id="stepWords"></div>
+      <div class="box step" id="stepSentences"></div>
+    </div>
+    <div class="box sounds" id="gSounds" style="display:none"></div>
   </div>
 </section>
 
@@ -312,42 +339,10 @@
   </div>
 </section>
 
-<!-- ============ done ============ -->
-<section id="done" class="screen">
-  <div>
-    <div class="check">✓</div>
-    <h1 style="margin-bottom:4px">ההקלטה נשמרה</h1>
-    <div class="who" id="doneWho"></div>
-    <div class="stats">
-      <div class="stat"><b id="doneSaved">0</b><span>כרטיסים נשמרו</span></div>
-      <div class="stat"><b id="doneMissing">0</b><span>כרטיסים חסרים</span></div>
-      <div class="stat"><b id="doneTime">0:00</b><span>משך ההקלטה</span></div>
-    </div>
-    <div class="path" id="donePath"></div>
-    <div class="warn" id="doneWarn"></div>
-    <div class="controls" style="justify-content:center">
-      <button class="primary" id="reviewDoneBtn">הצגת התוויות</button>
-      <button class="ghost" id="againBtn">הקלטה חדשה</button>
-      <button class="ghost" id="closeBtn">סגירה</button>
-    </div>
-  </div>
-</section>
-
-<!-- ============ sessions ============ -->
-<section id="sessions" class="screen">
-  <div class="page">
-    <div class="page-head">
-      <h1>הקלטות</h1>
-      <button class="ghost" id="sessionsBackBtn">→ הקלטה חדשה</button>
-    </div>
-    <div class="s-list" id="sList"></div>
-  </div>
-</section>
-
 <!-- ============ review ============ -->
 <section id="review" class="screen">
   <div class="r-head">
-    <button class="ghost" id="reviewBackBtn">→ הקלטות</button>
+    <button class="ghost" id="reviewBackBtn">→ חזרה לסשן</button>
     <h1 id="rTitle"></h1>
     <span class="progress-text" id="rProgress"></span>
     <button class="primary" id="transcribeBtn">תמלול</button>
@@ -358,10 +353,10 @@
     <span><i style="background:var(--accent);opacity:.35"></i>כרטיס שנשמר</span>
     <span><i style="background:var(--muted);opacity:.25"></i>קריאה קודמת (לא נשמרה)</span>
     <span><i style="background:var(--rec);opacity:.18"></i>הפסקה</span>
-    <span><b class="mark-ok">✓</b> התמלול זהה למילה</span>
-    <span><b class="mark-ok">≈</b> אותו צליל, כתיב אחר</span>
-    <span><b class="mark-warn">+</b> המילה נכונה, עם צלילים נוספים</span>
-    <span><b class="mark-bad">✗</b> צליל אחר</span>
+    <span><b class="mark-ok">✓</b> התמלול זהה לטקסט</span>
+    <span><span class="mark-typo">typo</span> אותו צליל, כתיב אחר</span>
+    <span><b class="mark-plus">+</b> המילה נכונה, עם צלילים נוספים</span>
+    <span><span class="note-x"></span> צליל אחר</span>
     <span>לחיצה על הגל: השמעה מהנקודה · לחיצה על שורה: השמעת הכרטיס · <kbd>רווח</kbd> השמעה / עצירה · <kbd>↑</kbd><kbd>↓</kbd> מעבר</span>
   </div>
   <div class="r-table-wrap">
@@ -377,17 +372,13 @@
   <div class="track" id="jobTrack"><div id="jobFill"></div></div>
 </div>
 
-<div class="overlay modal" id="planOverlay">
-  <div class="panel">
-    <h2>אבחון: <span id="planWho"></span></h2>
-    <p id="planSub"></p>
-    <div id="planResult"><p>טוען…</p></div>
-    <div class="row start-row">
-      <span class="hint" id="planStatus"></span>
-      <span>
-        <button class="ghost" id="planCloseBtn">סגירה</button>
-        <button class="primary" id="planRecordBtn" disabled>התחלת הקלטת משפטים</button>
-      </span>
+<div class="overlay modal" id="confirmOverlay">
+  <div class="dialog">
+    <h2 id="confirmTitle"></h2>
+    <p id="confirmText"></p>
+    <div class="controls">
+      <button class="primary" id="confirmYes"></button>
+      <button class="ghost" id="confirmNo">ביטול</button>
     </div>
   </div>
 </div>
@@ -438,46 +429,22 @@ function drawLevel(level) {
   });
 }
 
-// ---------- setup ----------
-async function loadConfig() {
-  const cfg = await api("/api/config");
-  $("list").innerHTML = "";
-  for (const l of cfg.lists) {
-    const o = document.createElement("option");
-    o.value = l.path;
-    o.textContent = `${l.path}  (${l.count})`;
-    o.selected = l.path === cfg.default;
-    $("list").appendChild(o);
-  }
-}
+// ---------- start a recording ----------
+let current = null; // {group, part} of the recording that runs now
 
-async function start() {
-  const speaker = $("speaker").value.trim();
-  if (!speaker) { $("setupError").textContent = "יש להזין את שם הדובר."; $("speaker").focus(); return; }
-  $("setupError").textContent = "";
-  $("startBtn").disabled = true;
-  try {
-    await startSession(speaker, $("list").value);
-  } catch (e) {
-    $("setupError").textContent = "שגיאה: " + e.message;
-  } finally {
-    $("startBtn").disabled = false;
-  }
-}
-
-async function startSession(speaker, list) {
-  {
-    const res = await api("/api/start", {speaker, list});
-    items = res.items;
-    index = 0; paused = false; active = true;
-    $("whoName").textContent = speaker;
-    $("recBox").classList.remove("paused");
-    show("session");
-    poll = setInterval(updateStatus, 120);
-    await countdown();
-    render(0, null);
-    api("/api/show", {index: 0});
-  }
+async function startRecording(group, part) {
+  const res = await api("/api/start", {group, part});
+  current = {group, part};
+  items = res.items;
+  index = 0; paused = false; active = true;
+  $("whoName").textContent = res.speaker;
+  $("recBox").classList.remove("paused");
+  $("pauseBtn").textContent = "הפסקה";
+  show("session");
+  poll = setInterval(updateStatus, 120);
+  await countdown();
+  render(0, null);
+  api("/api/show", {index: 0});
 }
 
 function countdown() {
@@ -579,78 +546,222 @@ async function finish() {
   active = false;
   $("endOverlay").classList.remove("on");
   clearInterval(poll);
-  try {
-    const res = await api("/api/finish", {});
-    $("doneWho").textContent = `דובר: ${$("whoName").textContent}`;
-    $("doneSaved").textContent = res.saved;
-    $("doneMissing").textContent = res.missing.length;
-    $("doneTime").textContent = fmt(res.seconds);
-    $("donePath").textContent = res.folder;
-    lastSession = res.name;
-    const c = res.clock || {};
-    $("doneWarn").textContent = c.ratio && (c.ratio < 0.99 || c.overflows > 0)
-      ? `אזהרה: אורך האודיו הוא ${(c.ratio * 100).toFixed(1)}% מהזמן האמיתי (${c.overflows} אובדני נתונים). ייתכן שחלק מהאודיו אבד.`
-      : "";
-  } catch (e) {
-    $("donePath").textContent = "שגיאה בשמירה: " + e.message;
-  }
-  show("done");
+  let error = "";
+  try { await api("/api/finish", {}); } catch (e) { error = e.message; }
+  await openGroup(current.group);
+  if (error) $("gDate").textContent = "שגיאה בשמירה: " + error;
 }
 
 // ---------- events ----------
-$("startBtn").onclick = start;
-$("speaker").addEventListener("keydown", (e) => { if (e.key === "Enter") start(); });
 $("nextBtn").onclick = () => go("next");
 $("prevBtn").onclick = () => go("prev");
 $("pauseBtn").onclick = togglePause;
 $("endBtn").onclick = askEnd;
 $("endYes").onclick = finish;
 $("endNo").onclick = () => $("endOverlay").classList.remove("on");
-$("againBtn").onclick = () => { show("setup"); loadConfig(); $("speaker").focus(); };
-$("closeBtn").onclick = () => { navigator.sendBeacon("/api/bye"); window.close(); };
 
 // ================================================================ review
-let lastSession = null;
 const R = { data: null, buffer: null, ctx: null, src: null, playStart: 0, playFrom: 0, playTo: 0,
             sel: -1, rows: [], peaks: null, raf: 0, poll: 0 };
 const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
 const sec = (s) => s.toFixed(2);
 
-async function openSessions() {
-  show("sessions");
-  const {sessions} = await api("/api/sessions");
-  $("sList").innerHTML = sessions.length ? "" : '<div class="empty">אין הקלטות עדיין.</div>';
-  for (const s of sessions) {
+const NOTE_X = `<svg class="mark-note" viewBox="0 0 24 24" aria-label="צליל אחר"><g fill="currentColor"><ellipse cx="8.5" cy="17.5" rx="4" ry="3" transform="rotate(-20 8.5 17.5)"/><rect x="11.2" y="3" width="1.9" height="14.5"/><path d="M13 3c1.2 2.6 5.2 3.4 5.2 7.4-1-1.8-3-2.6-5.2-2.8z"/></g><path d="M3 3l18 18M21 3L3 21" stroke="var(--rec)" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+document.querySelector(".legend .note-x").innerHTML = NOTE_X;
+const PART_NAME = {words: "מבחן מילים", sentences: "משפטים"};
+
+// ---------- home: the list of sessions ----------
+function resultChips(r) {
+  return `<span class="chip ok"><b>${r.match}</b> ✓</span>`
+    + (r.typo ? `<span class="chip"><b>${r.typo}</b> <span class="mark-typo">typo</span></span>` : "")
+    + (r.extra ? `<span class="chip"><b>${r.extra}</b> <span class="mark-plus" style="font-size:20px">+</span></span>` : "")
+    + (r.wrong ? `<span class="chip"><b>${r.wrong}</b> ${NOTE_X}</span>` : "");
+}
+function partChip(p, label) {
+  if (jobRunning(p.job)) return `<span class="chip run">${label}: מתמלל ${p.job.done} מתוך ${p.job.total}</span>`;
+  if (!p.recorded) return `<span class="chip">${label}: עדיין לא הוקלט</span>`;
+  if (p.results) return `<span class="chip ok">${label}: ${p.results.match + p.results.typo} מתוך ${p.results.total} נכונים</span>`;
+  return `<span class="chip">${label}: ${p.saved} מתוך ${p.items} הוקלטו</span>`;
+}
+const dateText = (iso) => iso ? new Date(iso).toLocaleString("he-IL", {dateStyle: "medium", timeStyle: "short"}) : "";
+
+async function openHome() {
+  show("home");
+  location.hash = "";
+  const {groups, speakers} = await api("/api/groups");
+  $("speakerList").innerHTML = speakers.map((n) => `<option value="${esc(n)}">`).join("");
+  $("gList").innerHTML = groups.length ? "" : '<div class="empty">אין סשנים עדיין.</div>';
+  for (const g of groups) {
     const row = document.createElement("div");
     row.className = "s-row";
+    const job = Object.values(g.parts).map((p) => p.job).find(jobRunning);
     row.innerHTML = `
-      <div><div class="s-name">${esc(s.speaker)}</div><div class="s-sub">${esc(s.name)} · ${esc(s.list)}</div></div>
-      <span class="pill">${s.saved} / ${s.items} כרטיסים</span>
-      ${jobRunning(s.transcribe) ? `<span class="pill ok">מתמלל ${s.transcribe.done} / ${s.transcribe.total}</span>`
-        : `<span class="pill ${s.transcribed ? "ok" : ""}">${s.transcribed ? "תומלל" : "לא תומלל"}</span>`}
-      ${s.transcribed && !jobRunning(s.transcribe) && s.speaker
-        ? `<button class="ghost s-plan" title="בחירת משפטים לפי הצלילים שהמודל טועה בהם">רשימת משפטים לפי האבחון</button>` : "<span></span>"}
-      ${jobRunning(s.transcribe) ? `<div class="s-prog"><div class="track"><div style="width:${pct(s.transcribe)}%"></div></div></div>` : ""}`;
-    const planBtn = row.querySelector(".s-plan");
-    if (planBtn) planBtn.onclick = (e) => { e.stopPropagation(); openPlan(s.speaker); };
-    if (s.complete) row.onclick = () => openReview(s.name);
-    else row.style.opacity = .5;
-    $("sList").appendChild(row);
+      <div><div class="s-name">${esc(g.speaker)}</div><div class="s-sub">${esc(dateText(g.created))}</div></div>
+      <div class="chips">${partChip(g.parts.words, "מילים")}${partChip(g.parts.sentences, "משפטים")}</div>
+      ${job ? `<div class="s-prog"><div class="track"><div style="width:${pct(job)}%"></div></div></div>` : ""}`;
+    row.onclick = () => openGroup(g.name);
+    $("gList").appendChild(row);
   }
 }
+
+async function newSession() {
+  const speaker = $("speaker").value.trim();
+  if (!speaker) { $("homeError").textContent = "יש להזין את שם הדובר."; $("speaker").focus(); return; }
+  $("homeError").textContent = "";
+  $("newBtn").disabled = true;
+  try {
+    const {name} = await api("/api/group/new", {speaker});
+    $("speaker").value = "";
+    await startRecording(name, "words");
+  } catch (e) { $("homeError").textContent = "שגיאה: " + e.message; }
+  $("newBtn").disabled = false;
+}
+$("newBtn").onclick = newSession;
+$("speaker").addEventListener("keydown", (e) => { if (e.key === "Enter") newSession(); });
+
+// ---------- one session ----------
+const G = {data: null, soundsKey: "", plan: null};
+
+async function openGroup(name) {
+  if (G.data?.name !== name) { G.soundsKey = ""; G.plan = null; $("gSounds").style.display = "none"; }
+  show("group");
+  location.hash = "group/" + name;
+  G.data = await api(`/api/group/${encodeURIComponent(name)}`);
+  renderGroup();
+}
+
+function partStatus(p) {
+  const lines = [];
+  if (!p.recorded) return "";
+  lines.push(`${p.saved} מתוך ${p.items} כרטיסים הוקלטו · ${esc(dateText(p.started))}`);
+  const c = p.clock;
+  if (c && c.ratio && (c.ratio < 0.99 || c.overflows > 0))
+    lines.push(`<span class="warn-line">אזהרה: אורך האודיו הוא ${(c.ratio * 100).toFixed(1)}% מהזמן האמיתי. ייתכן שחלק מהאודיו אבד.</span>`);
+  return lines.join("<br>");
+}
+function progressBlock(j) {
+  if (!jobRunning(j)) return j?.state === "error" ? `<div class="warn-line">שגיאה בתמלול: ${esc(j.error)}</div>` : "";
+  return `<div class="chips"><span class="chip run">${j.done === 0 ? "מתמלל… (טעינת המודל)" : `מתמלל ${j.done} מתוך ${j.total}`}</span></div>
+    <div class="s-prog"><div class="track ${j.done === 0 ? "wait" : ""}"><div style="width:${pct(j)}%"></div></div></div>`;
+}
+
+function renderGroup() {
+  const d = G.data, w = d.parts.words, s = d.parts.sentences;
+  $("gTitle").textContent = d.speaker;
+  $("gDate").textContent = dateText(d.created);
+
+  $("stepWords").className = "box step" + (w.results ? " done" : "");
+  $("stepWords").innerHTML = `
+    <div class="step-head"><span class="step-num">1</span><h2>מבחן מילים</h2></div>
+    <div class="status">${w.recorded ? partStatus(w) : "44 מילים קצרות, שבודקות את כל הצלילים. המבחן מוצא את הצלילים הקשים."}</div>
+    ${progressBlock(w.job)}
+    ${w.results ? `<div class="chips">${resultChips(w.results)}</div>` : ""}
+    <div class="buttons">
+      <button class="${w.recorded ? "ghost" : "primary"}" data-act="rec-words">${w.recorded ? "הקלטה מחדש" : "הקלטה"}</button>
+      ${w.recorded && w.complete ? '<button class="ghost" data-act="review-words">הצגת התוויות</button>' : ""}
+    </div>`;
+
+  const ready = d.list_ready;
+  $("stepSentences").className = "box step" + (s.results ? " done" : "") + (w.results ? "" : " off");
+  $("stepSentences").innerHTML = `
+    <div class="step-head"><span class="step-num">2</span><h2>משפטים</h2></div>
+    <div class="status">${s.recorded ? partStatus(s)
+      : !w.results ? "המשפטים ייבחרו לפי התוצאות של מבחן המילים."
+      : ready ? `${d.list_count} משפטים נבחרו, עם יותר מופעים של הצלילים הקשים.`
+      : '<span id="listWait"></span>'}</div>
+    ${progressBlock(s.job)}
+    ${s.results ? `<div class="chips">${resultChips(s.results)}</div>` : ""}
+    <div class="buttons">
+      <button class="${s.recorded ? "ghost" : "primary"}" data-act="rec-sentences" ${ready ? "" : "disabled"}>${s.recorded ? "הקלטה מחדש" : "הקלטה"}</button>
+      ${s.recorded && s.complete ? '<button class="ghost" data-act="review-sentences">הצגת התוויות</button>' : ""}
+    </div>`;
+
+  document.querySelectorAll("#group [data-act]").forEach((b) => { b.onclick = () => groupAction(b.dataset.act); });
+  // The sounds: after the word test is transcribed. Load them again only if the word test changed.
+  const key = w.results ? `${d.name}|${w.started}|${w.results.total}` : "";
+  if (key && key !== G.soundsKey) { G.soundsKey = key; loadSounds(d.name); }
+  if (!key) { G.soundsKey = ""; $("gSounds").style.display = "none"; }
+}
+
+async function loadSounds(name) {
+  G.plan = null;
+  // The list is made in the background. Show a message only if it takes more than 2 seconds.
+  const slow = setTimeout(() => { if (!G.plan && $("listWait")) $("listWait").textContent = "מכין את רשימת המשפטים…"; }, 2000);
+  const planJob = api("/api/plan", {name});
+  try {
+    const snd = await api("/api/sounds", {name});
+    if (!G.plan && G.data?.name === name) renderSounds(snd);
+  } catch (e) { /* the plan below shows the error */ }
+  try {
+    G.plan = await planJob;
+    if (G.data?.name !== name) return;
+    renderSounds(G.plan);
+    if (!G.data.list_ready) { G.data = await api(`/api/group/${encodeURIComponent(name)}`); renderGroup(); }
+  } catch (e) { if ($("listWait")) $("listWait").textContent = "שגיאה ביצירת הרשימה: " + e.message; }
+  clearTimeout(slow);
+}
+
+function renderSounds(d) {
+  const max = Math.max(...d.sounds.map((x) => x.rate), 0.01);
+  const hasList = "count" in d;
+  $("gSounds").style.display = "";
+  if (!d.sounds.some((x) => x.err)) {
+    $("gSounds").innerHTML = `<h2>הצלילים הקשים במבחן המילים</h2>
+      <p class="note">המודל זיהה נכון את כל הצלילים במבחן המילים. רשימת המשפטים נבחרה לכיסוי מלא של הצלילים.</p>`;
+    return;
+  }
+  $("gSounds").innerHTML = `
+    <h2>הצלילים הקשים במבחן המילים</h2>
+    <table><thead><tr><th>צליל</th><th>טעויות</th><th>שיעור</th><th></th><th>ברשימת המשפטים</th><th>ברשימה רגילה</th></tr></thead><tbody>
+    ${d.sounds.map((x) => `<tr><td><b>${esc(x.hebrew)}</b> <span style="color:var(--muted);direction:ltr;display:inline-block">${esc(x.phoneme)}</span></td>
+      <td>${x.err} / ${x.n}</td><td>${Math.round(x.rate * 100)}%</td>
+      <td style="width:28%"><div class="bar" style="width:${(x.rate / max) * 100}%"></div></td>
+      <td>${hasList ? x.in_list : "…"}</td><td style="color:var(--muted)">${hasList ? x.in_plain : "…"}</td></tr>`).join("")}
+    </tbody></table>
+    <p class="note">"ברשימת המשפטים": מספר המופעים של הצליל במשפטים שנבחרו. "ברשימה רגילה": המספר ברשימה באותו גודל, בלי האבחון.
+    ${hasList && d.recorded_before ? ` הרשימה לא כוללת ${d.recorded_before} משפטים שהדובר הקליט בסשנים קודמים.` : ""}</p>`;
+}
+
+function confirmBox(title, text, yes) {
+  return new Promise((resolve) => {
+    $("confirmTitle").textContent = title;
+    $("confirmText").textContent = text;
+    $("confirmYes").textContent = yes;
+    $("confirmOverlay").classList.add("on");
+    const done = (v) => { $("confirmOverlay").classList.remove("on"); resolve(v); };
+    $("confirmYes").onclick = () => done(true);
+    $("confirmNo").onclick = () => done(false);
+  });
+}
+
+async function groupAction(act) {
+  const [verb, part] = act.split("-");
+  const d = G.data;
+  if (verb === "review") { openReview(`${d.name}/${part}`); return; }
+  if (d.parts[part].recorded) {
+    const text = "ההקלטה הקודמת תעבור לתיקייה _old בתוך הסשן. היא לא תימחק."
+      + (part === "words" ? " גם רשימת המשפטים תיבחר מחדש לפי המבחן החדש." : "");
+    if (!await confirmBox(`להקליט מחדש את ה${PART_NAME[part]}?`, text, "הקלטה מחדש")) return;
+  }
+  try { await startRecording(d.name, part); }
+  catch (e) { $("gDate").textContent = "שגיאה: " + e.message; }
+}
+$("groupBackBtn").onclick = openHome;
 
 async function openReview(name) {
   stopPlay();
   show("review");
   R.data = null; R.buffer = null; R.peaks = null; R.sel = -1;
-  $("rTitle").textContent = name;
+  const [gname, part] = name.split("/");
+  $("rTitle").textContent = `${PART_NAME[part] || part} · ${gname}`;
+  location.hash = "review/" + name;
   $("rBody").innerHTML = '<tr><td colspan="8" class="empty">טוען…</td></tr>';
   R.data = await api(`/api/session/${encodeURIComponent(name)}`);
   renderReview();
   // Load and decode the full recording for the waveform and for playback.
   R.ctx = R.ctx || new AudioContext();
-  const bytes = await (await fetch(`/files/${encodeURIComponent(name)}/full-session.flac`)).arrayBuffer();
+  const bytes = await (await fetch(`/files/${name.split("/").map(encodeURIComponent).join("/")}/full-session.flac`)).arrayBuffer();
   R.buffer = await R.ctx.decodeAudioData(bytes);
   R.peaks = null;
   drawWave();
@@ -673,7 +784,8 @@ function renderReview() {
     `דובר: ${esc(d.meta.speaker)}`,
     `קצב דגימה ${d.meta.rate} Hz`,
   ];
-  if (nRes) pills.push(`<b>${nOk} / ${nRes}</b> תומללו נכון` + (nSound ? ` · ${nSound} באותו צליל (≈)` : "") + (nExtra ? ` · ${nExtra} עם צלילים נוספים (+)` : ""));
+  if (nRes) pills.push(`<b>${nOk} / ${nRes}</b> ✓` + (nSound ? ` · ${nSound} typo` : "") + (nExtra ? ` · ${nExtra} +` : "")
+    + (nRes - nOk - nSound - nExtra ? ` · ${nRes - nOk - nSound - nExtra} צליל אחר` : ""));
   if (clock) pills.push(`שעון: ${(clock.ratio * 100).toFixed(1)}% · ${clock.overflows} אובדנים`);
   else pills.push("בדיקת שעון: לא קיימת (הקלטה ישנה)");
   $("rStats").innerHTML = pills.map((p) => `<span class="pill">${p}</span>`).join("");
@@ -682,10 +794,10 @@ function renderReview() {
   R.rows = d.items.map((it) => ({it, take: kept[it.id], res: res[it.id], n: count[it.id] || 0}));
   $("rBody").innerHTML = R.rows.map((r, i) => {
     const t = r.take;
-    const mark = !r.res ? "" : r.res.match ? '<span class="mark-ok">✓</span>'
-      : r.res.extra ? '<span class="mark-warn" title="המילה נכונה, עם צלילים נוספים">+</span>'
-      : r.res.same_sound ? '<span class="mark-ok" title="אותו צליל, כתיב אחר">≈</span>'
-      : '<span class="mark-bad">✗</span>';
+    const mark = !r.res ? "" : r.res.match ? '<span class="mark-ok" title="התמלול זהה לטקסט">✓</span>'
+      : r.res.extra ? '<span class="mark-plus" title="המילה נכונה, עם צלילים נוספים">+</span>'
+      : r.res.same_sound ? '<span class="mark-typo" title="אותו צליל, כתיב אחר">typo</span>'
+      : `<span title="צליל אחר">${NOTE_X}</span>`;
     return `<tr data-i="${i}" class="${t ? "" : "missing"}">
       <td class="r-id">${esc(r.it.id)}</td>
       <td class="r-text">${r.it.carrier ? `<span style="color:var(--muted);font-size:14px">${esc(r.it.carrier)}</span> ` : ""}${esc(r.it.text)}</td>
@@ -841,62 +953,8 @@ function watchTranscribe() {
   }, 1000);
 }
 
-$("openSessionsBtn").onclick = openSessions;
-$("sessionsBackBtn").onclick = () => { show("setup"); loadConfig(); };
-$("reviewBackBtn").onclick = () => { stopPlay(); clearInterval(R.poll); openSessions(); };
-$("reviewDoneBtn").onclick = () => lastSession && openReview(lastSession);
+$("reviewBackBtn").onclick = () => { stopPlay(); clearInterval(R.poll); openGroup(R.data?.name.split("/")[0] || location.hash.split("/")[1]); };
 $("transcribeBtn").onclick = transcribe;
-
-// ---------- plan ----------
-let PLAN = null;
-async function openPlan(speaker) {
-  PLAN = null;
-  $("planWho").textContent = speaker;
-  $("planSub").textContent = "";
-  $("planResult").innerHTML = "<p>טוען…</p>";
-  $("planStatus").textContent = "";
-  $("planRecordBtn").disabled = true;
-  $("planOverlay").classList.add("on");
-  // The list is made in the background. Show a message only if it takes more than 2 seconds.
-  const slow = setTimeout(() => { if (!PLAN) $("planStatus").textContent = "מכין את רשימת המשפטים…"; }, 2000);
-  const listJob = api("/api/plan", {speaker});
-  try {
-    const prof = await api("/api/profile", {speaker});
-    if (!PLAN) renderPlan(prof);
-  } catch (e) { $("planResult").innerHTML = `<p class="error">שגיאה: ${esc(e.message)}</p>`; }
-  try {
-    PLAN = await listJob;
-    renderPlan(PLAN);
-    $("planStatus").textContent = `${PLAN.count} משפטים מוכנים`;
-    $("planRecordBtn").disabled = PLAN.count === 0;
-  } catch (e) { $("planStatus").textContent = "שגיאה ביצירת הרשימה: " + e.message; }
-  clearTimeout(slow);
-}
-function renderPlan(d) {
-  const max = Math.max(...d.sounds.map((x) => x.rate), 0.01);
-  const hasList = "count" in d;
-  $("planSub").textContent = `${d.sessions.length} הקלטות מתומללות · ${d.recorded} משפטים כבר הוקלטו · ${d.remaining} נשארו`;
-  $("planResult").innerHTML = `
-    <table><thead><tr><th>צליל</th><th>טעויות</th><th>שיעור</th><th></th><th>ברשימה החדשה</th><th>ברשימה רגילה</th></tr></thead><tbody>
-    ${d.sounds.map((x) => `<tr><td><b>${esc(x.hebrew)}</b> <span style="color:var(--muted);direction:ltr;display:inline-block">${esc(x.phoneme)}</span></td>
-      <td>${x.err} / ${x.n}</td><td>${Math.round(x.rate * 100)}%</td>
-      <td style="width:28%"><div class="bar" style="width:${(x.rate / max) * 100}%"></div></td>
-      <td>${hasList ? x.in_list : "…"}</td><td style="color:var(--muted)">${hasList ? x.in_plain : "…"}</td></tr>`).join("")}
-    </tbody></table>
-    <p>"ברשימה החדשה": מספר המופעים של הצליל במשפטים שנבחרו. "ברשימה רגילה": המספר ברשימה באותו גודל, בלי האבחון.</p>`;
-}
-$("planCloseBtn").onclick = () => $("planOverlay").classList.remove("on");
-$("planRecordBtn").onclick = async () => {
-  if (!PLAN) return;
-  $("planRecordBtn").disabled = true;
-  try {
-    await startSession(PLAN.speaker, PLAN.list);
-    $("planOverlay").classList.remove("on");
-  } catch (e) {
-    $("planStatus").textContent = "שגיאה: " + e.message;
-    $("planRecordBtn").disabled = false;
-  }
-};
 
 // ---------- settings ----------
 $("settingsBtn").onclick = async () => {
@@ -931,22 +989,25 @@ async function pollJobs() {
     const [name, j] = entries[0];
     bar.dataset.name = name;
     bar.classList.toggle("error", j.state === "error");
-    $("jobText").innerHTML = j.state === "error" ? `שגיאה בתמלול: ${esc(j.error)} · <bdi>${esc(name)}</bdi>`
-      : (j.done === 0 ? "מתמלל… (טעינת המודל)" : `מתמלל: ${j.done} מתוך ${j.total}`) + ` · <bdi>${esc(name)}</bdi>`;
+    const [gname, part] = name.split("/");
+    $("jobText").innerHTML = (j.state === "error" ? `שגיאה בתמלול: ${esc(j.error)}`
+      : j.done === 0 ? "מתמלל… (טעינת המודל)" : `מתמלל: ${j.done} מתוך ${j.total}`)
+      + ` · ${PART_NAME[part] || ""} · <bdi>${esc(gname)}</bdi>`;
     $("jobTrack").classList.toggle("wait", j.done === 0 && j.state !== "error");
     $("jobFill").style.width = pct(j) + "%";
   }
-  // A job ended: show the new results on the open screen.
+  // Show the progress and the new results on the open screen.
   const ended = Object.keys(jobsSeen).filter((n) => !(n in jobs) || !jobRunning(jobs[n]));
-  if (ended.length && $("sessions").classList.contains("on")) openSessions();
-  else if ($("sessions").classList.contains("on") && entries.length) openSessions();
+  const touched = [...ended, ...entries.filter(([, j]) => jobRunning(j)).map(([n]) => n)];
+  if (touched.length && $("home").classList.contains("on")) openHome();
+  if ($("group").classList.contains("on") && G.data && touched.some((n) => n.startsWith(G.data.name + "/"))) openGroup(G.data.name);
   jobsSeen = Object.fromEntries(entries.filter(([, j]) => jobRunning(j)));
 }
 setInterval(pollJobs, 1000);
-$("jobbar").onclick = () => { const n = $("jobbar").dataset.name; if (n) openReview(n); };
+$("jobbar").onclick = () => { const n = $("jobbar").dataset.name; if (n) openGroup(n.split("/")[0]); };
 
 document.addEventListener("keydown", (e) => {
-  for (const id of ["planOverlay", "settingsOverlay"]) {
+  for (const id of ["confirmOverlay", "settingsOverlay"]) {
     if ($(id).classList.contains("on")) {
       if (e.key === "Escape") $(id).classList.remove("on");
       return;
@@ -976,9 +1037,9 @@ document.addEventListener("keydown", (e) => {
 // Close the window: save the session and stop the server.
 window.addEventListener("pagehide", () => navigator.sendBeacon("/api/bye"));
 
-loadConfig().catch((e) => { $("setupError").textContent = "שגיאה: " + e.message; });
 if (location.hash.startsWith("#review/")) openReview(decodeURIComponent(location.hash.slice(8)));
-else if (location.hash === "#sessions") openSessions();
+else if (location.hash.startsWith("#group/")) openGroup(decodeURIComponent(location.hash.slice(7)));
+else openHome().catch((e) => { $("homeError").textContent = "שגיאה: " + e.message; });
 </script>
 </body>
 </html>

@@ -48,30 +48,16 @@ def pauses(events: list[dict], rate: int) -> list[dict]:
     return out
 
 
+PARTS = ("words", "sentences")
+
+
 def session_dir(name: str) -> Path:
-    folder = (RECORDINGS / name).resolve()
-    if folder.parent != RECORDINGS.resolve() or not folder.is_dir():
-        raise ValueError(f"no session: {name}")
+    """The folder of a recording. The name is "<session>/<part>", for example "dana-2026-11-23-092316/words"."""
+    group, _, part = name.partition("/")
+    folder = (RECORDINGS / group / part).resolve()
+    if part not in PARTS or folder.parent.parent != RECORDINGS.resolve() or not folder.is_dir():
+        raise ValueError(f"no recording: {name}")
     return folder
-
-
-def list_sessions() -> list[dict]:
-    out = []
-    if not RECORDINGS.exists():
-        return out
-    for folder in sorted(RECORDINGS.iterdir(), reverse=True):
-        meta_path = folder / "session.json"
-        if not folder.is_dir() or not meta_path.exists():
-            continue
-        meta = json.loads(meta_path.read_text())
-        out.append({
-            "name": folder.name, "speaker": meta.get("speaker", ""), "started": meta.get("started", ""),
-            "list": meta.get("list", ""), "items": len(meta.get("items", [])),
-            "saved": len(list(folder.glob("*.wav"))), "transcribed": (folder / "hyp.tsv").exists(),
-            "transcribe": JOBS.get(folder.name, {}),
-            "complete": (folder / "events.json").exists() and (folder / "full-session.flac").exists(),
-        })
-    return out
 
 
 def _accepted(item: dict) -> set[str]:
