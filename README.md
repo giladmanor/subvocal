@@ -16,7 +16,8 @@ See [BRIEF.md](BRIEF.md) for the full project brief, the models to test, and the
 |------|----------|
 | `prompts/sentences.he.txt` | 300 Hebrew training sentences that cover all the sounds of Modern Hebrew. |
 | `prompts/sentences.tsv` | The same sentences with IDs and phonemes. `subvocal.phonemize` makes this file. |
-| `prompts/probe.tsv` | 44 diagnostic words that find the problem sounds of a speaker. |
+| `prompts/probe.tsv` | 44 diagnostic words that find the problem sounds of a speaker, with hand-written niqqud. |
+| `prompts/niqqud-fixes.tsv` | Corrections to the automatic niqqud of the sentences. |
 | `subvocal/` | Python scripts: phonemize, coverage, record, transcribe, diagnose, select. |
 
 ## Setup
@@ -64,6 +65,18 @@ The folder contains `full-session.flac`, `events.json` (the card flips), `sessio
    `python -m subvocal.diagnose --refs prompts/sentences.tsv --hyp $SESSION/hyp.tsv --profile data/user-recordings/dana-profile.json`
 7. Add the recorded IDs to `data/user-recordings/dana-recorded.txt`.
 8. Select the next sentences with `--done data/user-recordings/dana-recorded.txt`, and do steps 5 to 8 again.
+
+The cards show the text with niqqud.
+
+To see the labels of a session, click **הקלטות קודמות** on the start screen, or **הצגת התוויות**
+at the end of a session. The review screen shows:
+
+- the waveform of the full session, with the region of each card;
+- the takes that the app did not keep (the speaker went back to the card);
+- the start and the length of each card file;
+- the transcript of each card and a ✓ or ✗ mark, after you click **תמלול**.
+
+Click a row or a region to play it. Use ↑ and ↓ to go through the cards, and Space to play or stop.
 
 If the app stops before the end of a session, the recording and the card flips stay in the folder.
 To make the card files again, run `python -m subvocal.record --split $SESSION`.

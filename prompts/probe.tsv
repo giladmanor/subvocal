@@ -1,45 +1,45 @@
-id	word	phonemes	targets	foils	group	accept
-P01	שיר	ʃ i ʁ	ʃ	סיר	sibilant	
-P02	סיר	s i ʁ	s	שיר	sibilant	
-P03	צל	ts e l	ts	סל	sibilant	
-P04	סל	s a l	s	צל של	sibilant	
-P05	של	ʃ e l	ʃ	סל	sibilant	
-P06	זר	z a ʁ	z	צר סר	sibilant	
-P07	גז	ɡ a z	z	גס	sibilant	
-P08	גס	ɡ a s	s	גז	sibilant	
-P09	חץ	χ e ts	ts	חס	sibilant	
-P10	שמש	ʃ e m e ʃ	ʃ		sibilant	
-P11	גר	ɡ a ʁ	ʁ	גל	liquid	
-P12	גל	ɡ a l	l	גר	liquid	
-P13	רגל	ʁ e ɡ e l	ʁ l		liquid	
-P14	לחם	l e χ e m	l	רחם	liquid	
-P15	קיר	k i ʁ	k	גיר	velar	
-P16	גיר	ɡ i ʁ	ɡ	קיר	velar	
-P17	חם	χ a m	χ	קם הם	velar	
-P18	קם	k a m	k	חם גם	velar	
-P19	הר	h a ʁ	h		glottal	
-P20	פת	p a t	p	בת	labial	
-P21	בת	b a t	b	פת	labial	
-P22	דג	d a ɡ	d	תג	dental	
-P23	תג	t a ɡ	t	דג	dental	
-P24	מלח	m e l a χ	m		nasal	
-P25	נחש	n a χ a ʃ	n		nasal	
-P26	ורד	v e ʁ e d	v		labial	
-P27	כיף	k e f	f		labial	
-P28	ילד	j e l e d	j		glide	
-P29	אבא	ʔ a b a	ʔ		glottal	
-P30	צ׳יפס	tʃ i p s	tʃ		affricate	chips
-P31	ג׳ינס	dʒ i n s	dʒ		affricate	jeans ג'ינס
-P32	ז׳קט	ʒ a k e t	ʒ		affricate	jacket ז'קט
-P33	שתיים	ʃ t a j i m	ʃ t		cluster	
-P34	פסנתר	p s a n t e ʁ	p s		cluster	
-P35	מברשת	m i v ʁ e ʃ e t	v ʁ		cluster	
-P36	צפרדע	ts f a ʁ d e a	ts f		cluster	
-P37	זברה	z e b ʁ a	b ʁ		cluster	
-P38	סבתא	s a v t a	v t		cluster	
-P39	כדור	k a d u ʁ	u		vowel	
-P40	תפוח	t a p u a χ	u		vowel	
-P41	חול	χ o l	o		vowel	
-P42	סוס	s u s	u		vowel	
-P43	קל	k a l	a	כל	vowel	
-P44	כל	k o l	o	קל	vowel	
+id	word	niqqud	phonemes	targets	foils	group	accept
+P01	שיר	שִׁיר	ʃ i ʁ	ʃ	סיר	sibilant	
+P02	סיר	סִיר	s i ʁ	s	שיר	sibilant	
+P03	צל	צֵל	ts e l	ts	סל	sibilant	
+P04	סל	סַל	s a l	s	צל של	sibilant	
+P05	של	שֶׁל	ʃ e l	ʃ	סל	sibilant	
+P06	זר	זַר	z a ʁ	z	צר סר	sibilant	
+P07	גז	גַּז	ɡ a z	z	גס	sibilant	
+P08	גס	גַּס	ɡ a s	s	גז	sibilant	
+P09	חץ	חֵץ	χ e ts	ts	חס	sibilant	
+P10	שמש	שֶׁמֶשׁ	ʃ e m e ʃ	ʃ		sibilant	
+P11	גר	גַּר	ɡ a ʁ	ʁ	גל	liquid	
+P12	גל	גַּל	ɡ a l	l	גר	liquid	
+P13	רגל	רֶגֶל	ʁ e ɡ e l	ʁ l		liquid	
+P14	לחם	לֶחֶם	l e χ e m	l	רחם	liquid	
+P15	קיר	קִיר	k i ʁ	k	גיר	velar	
+P16	גיר	גִּיר	ɡ i ʁ	ɡ	קיר	velar	
+P17	חם	חַם	χ a m	χ	קם הם	velar	
+P18	קם	קַם	k a m	k	חם גם	velar	
+P19	הר	הַר	h a ʁ	h		glottal	
+P20	פת	פַּת	p a t	p	בת	labial	
+P21	בת	בַּת	b a t	b	פת	labial	
+P22	דג	דָּג	d a ɡ	d	תג	dental	
+P23	תג	תָּג	t a ɡ	t	דג	dental	
+P24	מלח	מֶלַח	m e l a χ	m		nasal	
+P25	נחש	נָחָשׁ	n a χ a ʃ	n		nasal	
+P26	ורד	וֶרֶד	v e ʁ e d	v		labial	
+P27	כיף	כֵּיף	k e f	f		labial	
+P28	ילד	יֶלֶד	j e l e d	j		glide	
+P29	אבא	אַבָּא	ʔ a b a	ʔ		glottal	
+P30	צ׳יפס	צִ׳יפְּס	tʃ i p s	tʃ		affricate	chips
+P31	ג׳ינס	גִ׳ינְס	dʒ i n s	dʒ		affricate	jeans ג'ינס
+P32	ז׳קט	זַ׳קֵט	ʒ a k e t	ʒ		affricate	jacket ז'קט
+P33	שתיים	שְׁתַּיִים	ʃ t a j i m	ʃ t		cluster	
+P34	פסנתר	פְּסַנְתֵּר	p s a n t e ʁ	p s		cluster	
+P35	מברשת	מִבְרֶשֶׁת	m i v ʁ e ʃ e t	v ʁ		cluster	
+P36	צפרדע	צְפַרְדֵּעַ	ts f a ʁ d e a	ts f		cluster	
+P37	זברה	זֶבְּרָה	z e b ʁ a	b ʁ		cluster	
+P38	סבתא	סַבְתָּא	s a v t a	v t		cluster	
+P39	כדור	כַּדּוּר	k a d u ʁ	u		vowel	
+P40	תפוח	תַּפּוּחַ	t a p u a χ	u		vowel	
+P41	חול	חוֹל	χ o l	o		vowel	
+P42	סוס	סוּס	s u s	u		vowel	
+P43	קל	קַל	k a l	a	כל	vowel	
+P44	כל	כֹּל	k o l	o	קל	vowel	

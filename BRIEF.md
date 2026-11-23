@@ -182,8 +182,10 @@ minimum coverage of all other sounds. A test with a simulated speaker (ש sounds
 
 ### Limits
 
-- The phonemizer (phonikud) sometimes makes errors, for example ש as /s/ in "שחקן".
-  The coverage counts are thus estimates.
+- The phonemizer (phonikud) sometimes makes errors, mostly in loanwords (for example
+  "צ׳אט" as /tʃet/). The coverage counts are thus estimates.
+- The cards show niqqud from phonikud. `prompts/niqqud-fixes.tsv` corrects the known errors.
+  A native speaker must still review the niqqud of all 300 sentences.
 - The phonemizer guesses the vowels of a wrong word with no context. Vowel error rates are
   less reliable than consonant error rates.
 - The diagnosis measures the errors of the model for this speaker. It does not measure the

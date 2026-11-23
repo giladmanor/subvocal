@@ -10,6 +10,8 @@ It needs the ONNX model file. Download it with:
 from __future__ import annotations
 
 import os
+import re
+import unicodedata
 from functools import lru_cache
 from pathlib import Path
 
@@ -80,10 +82,37 @@ class Phonemizer:
         return self._model
 
     @lru_cache(maxsize=4096)
+    def diacritize(self, text: str) -> str:
+        """Text with phonikud diacritics. This includes phonetic marks that are not standard niqqud."""
+        return self._load().add_diacritics(text)
+
     def __call__(self, text: str) -> str:
         from phonikud import phonemize
 
-        return phonemize(self._load().add_diacritics(text))
+        return phonemize(self.diacritize(text))
+
+    def niqqud(self, text: str) -> str:
+        """Text with standard niqqud, for a person to read."""
+        return clean_niqqud(self.diacritize(text))
+
+
+# phonikud marks that are not standard niqqud: "|" (prefix boundary), U+05AB (stress), U+05BD (meteg).
+_PHONIKUD_MARKS = str.maketrans("", "", "|\u05ab\u05bd")
+
+
+_MARKS = "[\u0591-\u05c7]"
+# phonikud writes the holam or the qubuts on the letter before a bare vav ("חֹורֶף", "מְיֻוחָד").
+# Standard niqqud puts them on the vav: holam male ("חוֹרֶף") and shuruk ("מְיוּחָד").
+_HOLAM_BEFORE_VAV = re.compile(f"({_MARKS}*)[\u05b9\u05c7]({_MARKS}*)ו(?!{_MARKS})")
+_QUBUTS_BEFORE_VAV = re.compile(f"({_MARKS}*)\u05bb({_MARKS}*)ו(?!{_MARKS})")
+
+
+def clean_niqqud(text: str) -> str:
+    """Remove the phonikud marks, use the standard forms, and normalize to Unicode NFC."""
+    text = unicodedata.normalize("NFC", text.translate(_PHONIKUD_MARKS))
+    text = _HOLAM_BEFORE_VAV.sub(lambda m: m[1] + m[2] + "ו\u05b9", text)
+    text = _QUBUTS_BEFORE_VAV.sub(lambda m: m[1] + m[2] + "ו\u05bc", text)
+    return unicodedata.normalize("NFC", text)
 
 
 def align(ref: list[str], hyp: list[str]) -> list[tuple[str | None, str | None]]:
