@@ -13,6 +13,7 @@ The audio stays in memory. The app does not save it.
 
 from __future__ import annotations
 
+import re
 import subprocess
 import threading
 import time
@@ -36,6 +37,16 @@ Rules:
 - Keep numbers as the recognizer wrote them.
 - If the transcript is empty or you cannot improve it, return it unchanged.
 - Return only the corrected Hebrew sentence, with no explanation."""
+
+
+def for_speech(text: str) -> str:
+    """Prepare text for the Hebrew voice of "say".
+
+    The transcription model writes ג'קט with an ASCII apostrophe. The Carmit voice then reads
+    the UTF-8 bytes of a geresh aloud ("x d7 x b3"). With the Hebrew geresh (U+05F3) it reads
+    ג׳, ז׳, and צ׳ correctly.
+    """
+    return re.sub(r"(?<=[\u05d0-\u05ea])['\u2019`\u05f3]", "\u05f3", text)
 
 
 class Trial:
@@ -162,7 +173,8 @@ class Trial:
             if cfg["tts"].get("speak", True) and text:
                 self.state = "speaking"
                 t0 = time.time()
-                subprocess.run(["say", "-v", cfg["tts"]["voice"], "-r", str(int(cfg["tts"]["rate"])), text], check=False)
+                subprocess.run(["say", "-v", cfg["tts"]["voice"], "-r", str(int(cfg["tts"]["rate"])), for_speech(text)],
+                               check=False)
                 turn["times"]["tts"] = round(time.time() - t0, 2)
         except Exception as e:  # noqa: BLE001
             self.error = f"{type(e).__name__}: {e}"

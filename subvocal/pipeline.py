@@ -17,7 +17,7 @@ import threading
 from . import review, settings
 from .groups import list_groups
 from .phonetics import REPO_ROOT
-from .trial import llm_credentials
+from .trial import for_speech, llm_credentials
 
 
 def runs(speaker: str) -> list[dict]:
@@ -110,5 +110,5 @@ def set_active(speaker: str, run: str) -> dict:
 
 def say_sample(text: str) -> dict:
     cfg = settings.load()["tts"]
-    subprocess.Popen(["say", "-v", cfg["voice"], "-r", str(int(cfg["rate"])), text])
+    subprocess.Popen(["say", "-v", cfg["voice"], "-r", str(int(cfg["rate"])), for_speech(text)])
     return {"ok": True}
