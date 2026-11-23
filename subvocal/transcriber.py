@@ -18,7 +18,7 @@ import time
 import traceback
 from pathlib import Path
 
-from . import review
+from . import review, settings
 from .corpus import write_tsv
 from .transcribe import APP_THREADS, load_model, read_wav, transcribe_audio
 
@@ -29,6 +29,7 @@ class Worker:
     def __init__(self):
         self._q: queue.Queue = queue.Queue()
         self._model = None
+        self._model_name = ""
         self._thread: threading.Thread | None = None
         self._lock = threading.Lock()
 
@@ -48,8 +49,11 @@ class Worker:
         while True:
             fn, on_error = self._q.get()
             try:
-                if self._model is None:
-                    self._model = load_model(cpu_threads=APP_THREADS)
+                # The recordings use the base model of the settings. Load it again if it changed.
+                name = settings.base()["ct2"]
+                if self._model is None or self._model_name != name:
+                    self._model = load_model(name, cpu_threads=APP_THREADS)
+                    self._model_name = name
                 fn(self._model)
             except Exception as e:  # noqa: BLE001 - show the error in the app, and continue
                 traceback.print_exc()

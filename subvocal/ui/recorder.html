@@ -89,7 +89,14 @@
   /* ---------- session (group) screen ---------- */
   #group { overflow: auto; }
   .steps { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin: 20px 0 14px; }
-  .step.test { border-style: dashed; }
+  .next-box { display: flex; align-items: center; gap: 16px; margin-top: 18px; border-color: var(--accent); flex-wrap: wrap; }
+  .next-box .label { flex: 1; min-width: 240px; }
+  .next-box .label b { display: block; font-size: 18px; margin-bottom: 3px; }
+  .next-box .label span { font-size: 14px; color: var(--muted); }
+  .step.next { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent); }
+  .lost { position: fixed; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center;
+          background: color-mix(in srgb, var(--bg) 92%, transparent); text-align: center; padding: 16px; }
+  .lost.on { display: flex; }
   @media (max-width: 980px) { .steps { grid-template-columns: 1fr; } }
   .step { display: flex; flex-direction: column; gap: 12px; }
   .step.off { opacity: .6; }
@@ -173,6 +180,30 @@
   .text, .carrier, .r-text { font-feature-settings: "mark", "mkmk"; }
   .text { line-height: 1.3; }
   .card.sentence .text { line-height: 1.55; }
+
+  /* ---------- pipeline ---------- */
+  #pipeline { overflow: auto; }
+  .flow { display: flex; flex-direction: column; gap: 0; margin-top: 18px; }
+  .flow .arrow { text-align: center; color: var(--muted); font-size: 22px; line-height: 30px; }
+  .stage { display: grid; gap: 14px; }
+  .stage-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .stage-head h2 { margin: 0; flex: 1; }
+  .stage-model { font-family: ui-monospace, Menlo, monospace; font-size: 13px; color: var(--muted); direction: ltr; }
+  .form { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; }
+  .form label { margin: 0 0 6px; font-size: 13px; }
+  .form .field { display: flex; flex-direction: column; }
+  .form input, .form select { font-size: 15px; padding: 8px 10px; width: auto; min-width: 90px; }
+  .form input[type=checkbox] { min-width: 0; width: 18px; height: 18px; }
+  .form .check { flex-direction: row; align-items: center; gap: 8px; }
+  .form .check label { margin: 0; }
+  select { font: inherit; border-radius: 10px; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); }
+  .stage button { font-size: 15px; padding: 10px 16px; }
+  .runs { width: 100%; }
+  .runs td, .runs th { padding: 7px 8px; font-size: 14px; text-align: right; position: static; background: none; }
+  .runs .num { text-align: right; }
+  .better { color: var(--accent); font-weight: 600; }
+  .worse { color: var(--rec); font-weight: 600; }
+  .muted { color: var(--muted); }
 
   /* ---------- session list ---------- */
   #home { overflow: auto; }
@@ -259,7 +290,10 @@
   <div class="page">
     <div class="page-head">
       <div><div class="brand">Subvocal</div><h1>סשנים</h1></div>
-      <button class="link" id="settingsBtn">⚙ הגדרות</button>
+      <div>
+        <button class="ghost" id="pipelineBtn">אימון מודל ←</button>
+        <button class="link" id="settingsBtn">⚙ הגדרות</button>
+      </div>
     </div>
     <div class="box new-box">
       <h2>סשן חדש</h2>
@@ -276,6 +310,28 @@
   </div>
 </section>
 
+<!-- ============ pipeline ============ -->
+<section id="pipeline" class="screen">
+  <div class="page">
+    <div class="page-head">
+      <div><div class="brand">Subvocal</div><h1>אימון מודל</h1></div>
+      <div class="form">
+        <div class="field"><label for="pSpeaker">דובר</label><select id="pSpeaker"></select></div>
+        <button class="ghost" id="pipelineBackBtn">→ סשנים</button>
+      </div>
+    </div>
+    <p class="note">הדיבור עובר שלושה שלבים: תמלול, תיקון לפי ההקשר, והקראה. כאן רואים את המצב של כל שלב, משנים הגדרות ומאמנים את מודל התמלול.</p>
+    <div class="flow">
+      <div class="box stage" id="stageAsr"></div>
+      <div class="arrow">↓</div>
+      <div class="box stage" id="stageLlm"></div>
+      <div class="arrow">↓</div>
+      <div class="box stage" id="stageTts"></div>
+    </div>
+    <div class="error" id="pError"></div>
+  </div>
+</section>
+
 <!-- ============ one training session ============ -->
 <section id="group" class="screen">
   <div class="page">
@@ -283,6 +339,7 @@
       <div><div class="brand" id="gDate"></div><h1 id="gTitle"></h1></div>
       <button class="ghost" id="groupBackBtn">→ סשנים</button>
     </div>
+    <div class="box next-box" id="gNext" style="display:none"></div>
     <div class="steps">
       <div class="box step" id="stepWords"></div>
       <div class="box step" id="stepSentences"></div>
@@ -368,6 +425,11 @@
     </table>
   </div>
 </section>
+
+<div class="lost" id="lost"><div>
+  <h1>החלון הזה כבר לא מחובר לאפליקציה</h1>
+  <p class="note">האפליקציה נסגרה או נפתחה מחדש בחלון אחר. אפשר לסגור את החלון הזה.</p>
+</div></div>
 
 <div class="jobbar" id="jobbar" title="פתיחת ההקלטה">
   <span id="jobText"></span>
@@ -629,7 +691,13 @@ async function openGroup(name) {
   if (G.data?.name !== name) { G.soundsKey = ""; G.plan = null; $("gSounds").style.display = "none"; }
   show("group");
   location.hash = "group/" + name;
-  G.data = await api(`/api/group/${encodeURIComponent(name)}`);
+  try {
+    G.data = await api(`/api/group/${encodeURIComponent(name)}`);
+  } catch (e) {
+    $("gTitle").textContent = "שגיאה";
+    $("gDate").textContent = e.message;
+    return;
+  }
   renderGroup();
 }
 
@@ -648,12 +716,28 @@ function progressBlock(j) {
     <div class="s-prog"><div class="track ${j.done === 0 ? "wait" : ""}"><div style="width:${pct(j)}%"></div></div></div>`;
 }
 
+function nextStep(d) {
+  const w = d.parts.words, s = d.parts.sentences, t = d.parts.test;
+  if (!w.recorded) return {part: "words", title: "הקלטת מבחן המילים", text: "44 מילים קצרות. המבחן מוצא את הצלילים הקשים."};
+  if (jobRunning(w.job) || !w.results) return {wait: true, title: "התמלול של מבחן המילים רץ", text: "אחרי התמלול האפליקציה תבחר את המשפטים."};
+  if (!s.recorded) return d.list_ready ? {part: "sentences", title: "הקלטת המשפטים", text: `${d.list_count} משפטים שנבחרו לפי מבחן המילים.`}
+    : {wait: true, title: "האפליקציה בוחרת את המשפטים", text: ""};
+  if (!t.recorded && !d.test_elsewhere) return {part: "test", title: "הקלטת מבחן ההערכה",
+    text: "30 משפטים קבועים שלא משמשים לאימון. הם מודדים את המודל לפני האימון ואחריו. פעם אחת לכל דובר."};
+  return {done: true, title: "הסשן הושלם", text: t.recorded || d.test_elsewhere ? "אפשר לעבור לאימון המודל, או להתחיל סשן חדש." : ""};
+}
+
 function renderGroup() {
   const d = G.data, w = d.parts.words, s = d.parts.sentences;
+  const next = nextStep(d);
+  $("gNext").style.display = "";
+  $("gNext").innerHTML = `<div class="label"><b>${next.done ? "✓ " : "השלב הבא: "}${esc(next.title)}</b><span>${esc(next.text)}</span></div>
+    ${next.part ? `<button class="primary" data-act="rec-${next.part}">${esc(next.title)}</button>` : ""}
+    ${next.done ? '<button class="ghost" data-act="go-pipeline">אימון מודל ←</button>' : ""}`;
   $("gTitle").textContent = d.speaker;
   $("gDate").textContent = dateText(d.created);
 
-  $("stepWords").className = "box step" + (w.results ? " done" : "");
+  $("stepWords").className = "box step" + (w.results ? " done" : "") + (next.part === "words" ? " next" : "");
   $("stepWords").innerHTML = `
     <div class="step-head"><span class="step-num">1</span><h2>מבחן מילים</h2></div>
     <div class="status">${w.recorded ? partStatus(w) : "44 מילים קצרות, שבודקות את כל הצלילים. המבחן מוצא את הצלילים הקשים."}</div>
@@ -665,7 +749,7 @@ function renderGroup() {
     </div>`;
 
   const ready = d.list_ready;
-  $("stepSentences").className = "box step" + (s.results ? " done" : "") + (w.results ? "" : " off");
+  $("stepSentences").className = "box step" + (s.results ? " done" : "") + (w.results ? "" : " off") + (next.part === "sentences" ? " next" : "");
   $("stepSentences").innerHTML = `
     <div class="step-head"><span class="step-num">2</span><h2>משפטים</h2></div>
     <div class="status">${s.recorded ? partStatus(s)
@@ -680,15 +764,16 @@ function renderGroup() {
     </div>`;
 
   const t = d.parts.test;
-  $("stepTest").className = "box step test" + (t.results ? " done" : "");
+  $("stepTest").className = "box step" + (t.results ? " done" : "") + (next.part === "test" ? " next" : "");
   $("stepTest").innerHTML = `
     <div class="step-head"><span class="step-num">3</span><h2>מבחן הערכה</h2></div>
     <div class="status">${t.recorded ? partStatus(t)
+      : d.test_elsewhere ? "הדובר כבר הקליט את מבחן ההערכה בסשן אחר. אין צורך להקליט אותו שוב."
       : "30 משפטים קבועים, שלא משמשים לאימון. הם מודדים את מודל התמלול לפני האימון ואחריו. מספיק להקליט אותם פעם אחת לכל דובר."}</div>
     ${progressBlock(t.job)}
     ${t.results ? `<div class="chips">${resultChips(t.results)}</div>` : ""}
     <div class="buttons">
-      <button class="ghost" data-act="rec-test">${t.recorded ? "הקלטה מחדש" : "הקלטה"}</button>
+      <button class="${next.part === "test" ? "primary" : "ghost"}" data-act="rec-test">${t.recorded ? "הקלטה מחדש" : "הקלטה"}</button>
       ${t.recorded && t.complete ? '<button class="ghost" data-act="review-test">הצגת התוויות</button>' : ""}
     </div>`;
 
@@ -753,6 +838,7 @@ function confirmBox(title, text, yes) {
 async function groupAction(act) {
   const [verb, part] = act.split("-");
   const d = G.data;
+  if (act === "go-pipeline") { openPipeline(d.speaker); return; }
   if (verb === "review") { openReview(`${d.name}/${part}`); return; }
   if (d.parts[part].recorded) {
     const text = "ההקלטה הקודמת תעבור לתיקייה _old בתוך הסשן. היא לא תימחק."
@@ -971,6 +1057,139 @@ function watchTranscribe() {
 $("reviewBackBtn").onclick = () => { stopPlay(); clearInterval(R.poll); openGroup(R.data?.name.split("/")[0] || location.hash.split("/")[1]); };
 $("transcribeBtn").onclick = transcribe;
 
+// ---------- pipeline ----------
+const P = {data: null};
+const pctText = (v) => (v == null ? "—" : `${(v * 100).toFixed(1)}%`);
+const delta = (b, t) => (b == null || t == null) ? "" : t < b ? "better" : t > b ? "worse" : "";
+
+async function openPipeline(speaker) {
+  show("pipeline");
+  location.hash = "pipeline";
+  $("pError").textContent = "";
+  try {
+    P.data = await api("/api/pipeline", {speaker: speaker || P.data?.speaker || null});
+    renderPipeline();
+  } catch (e) { $("pError").textContent = "שגיאה: " + e.message; }
+}
+
+async function savePipeline(changes) {
+  $("pError").textContent = "";
+  try { await api("/api/settings", changes); await openPipeline(P.data.speaker); }
+  catch (e) { $("pError").textContent = "שגיאה: " + e.message; }
+}
+
+function renderPipeline() {
+  const d = P.data, cfg = d.settings, asr = d.asr, run = asr.runs.find((r) => r.name === asr.active);
+  $("pSpeaker").innerHTML = d.speakers.map((n) => `<option ${n === d.speaker ? "selected" : ""}>${esc(n)}</option>`).join("");
+  const job = asr.job, training = jobRunning(job);
+  const data = asr.data;
+  const notes = [];
+  if (data.train_minutes < 15) notes.push(`יש רק ${data.train_minutes} דקות של משפטי אימון. המטרה הראשונה היא 15 דקות, ואחריה 30 ו-60. אימון עם פחות נתונים הוא ניסוי של הכלים בלבד.`);
+  if (!data.test_from_test_part) notes.push(data.test_clips
+    ? `אין עדיין הקלטה של מבחן ההערכה. המדידה משתמשת ב-${data.test_clips} משפטים ממבחן ההערכה שהדובר הקליט בתוך חלק המשפטים.`
+    : "אין הקלטות של מבחן ההערכה. הקליטו אותו (חלק 3 בסשן) לפני האימון, כדי למדוד את התוצאה.");
+
+  const stageLabel = (j) => ({load: "טעינת המודל", features: "הכנת הנתונים", "features:val": "הכנת נתוני הבדיקה", train: "אימון",
+    convert: "המרת המודל", "eval:base:test": "מדידת המודל הבסיסי", "eval:tuned:test": "מדידת המודל החדש",
+    "eval:base:val": "מדידה על נתוני הבדיקה (בסיסי)", "eval:tuned:val": "מדידה על נתוני הבדיקה (חדש)", start: "התחלה"}[j.stage] || j.stage);
+
+  const runRows = asr.runs.map((r) => {
+    const t = r.eval.test, v = r.eval.val;
+    const cell = (x) => x && x.base.n ? `<span class="muted">${pctText(x.base.wer)}</span> → <span class="${delta(x.base.wer, x.tuned.wer)}">${pctText(x.tuned.wer)}</span>` : "—";
+    const state = r.ready ? "" : (training && r === asr.runs[0]) ? "באימון…" : "לא הושלם";
+    return `<tr><td>${esc(dateText(r.created))}</td>
+      <td>${r.data.train_clips ?? "—"} (${r.data.train_minutes ?? "?"} דק׳)</td>
+      <td>${r.params.epochs} · ${r.params.lr} · ${r.params.rank}${r.params.with_words ? " · +מילים" : ""}</td>
+      <td>${cell(t)}${t?.base.n ? ` <span class="muted">(${t.base.n})</span>` : ""}</td>
+      <td>${cell(v)}${v?.base.n ? ` <span class="muted">(${v.base.n})</span>` : ""}</td>
+      <td>${r.ready ? `<button class="ghost" data-use="${esc(r.name)}" ${r.name === asr.active ? "disabled" : ""}>${r.name === asr.active ? "בשימוש" : "שימוש"}</button>` : `<span class="muted">${state}</span>`}</td></tr>`;
+  }).join("");
+
+  $("stageAsr").innerHTML = `
+    <div class="stage-head"><span class="step-num">1</span><h2>מודל תמלול</h2>
+      <span class="chip ${run ? "ok" : ""}">${run ? "מכוונן לדובר" : "בסיסי (לא מכוונן)"}</span></div>
+    <div class="stage-model">${esc(d.bases[cfg.asr.base].label)}${run ? ` + LoRA ${esc(run.name)}` : ""}</div>
+    <div class="form">
+      <div class="field"><label for="pBase">מודל בסיס</label><select id="pBase">${Object.entries(d.bases).map(([k, b]) =>
+        `<option value="${k}" ${k === cfg.asr.base ? "selected" : ""}>${esc(b.label)}</option>`).join("")}</select></div>
+      <div class="field"><label>מודל בשימוש</label><button class="ghost" data-use="" ${run ? "" : "disabled"}>${run ? "חזרה לבסיסי" : "בסיסי בשימוש"}</button></div>
+    </div>
+    <h2 style="font-size:16px;margin-top:6px">הנתונים</h2>
+    <table class="runs"><thead><tr><th>קבוצה</th><th>מה נכנס אליה</th><th>הקלטות</th><th>דקות</th></tr></thead><tbody>
+      <tr><td><b>אימון</b></td><td>כל המשפטים שהדובר הקליט בכל הסשנים${cfg.train.with_words ? ", וגם מבחני המילים" : ""}, חוץ ממשפטי המבחן ומקבוצת הבדיקה.</td>
+        <td>${data.train_clips}</td><td>${data.train_minutes}</td></tr>
+      <tr><td><b>בדיקה</b></td><td>10% מהמשפטים, שנבחרים קבוע לפי מזהה המשפט. האימון לא לומד מהם. הם בוחרים את המחזור הטוב ביותר.</td>
+        <td>${data.val_clips}</td><td>${data.val_minutes}</td></tr>
+      <tr><td><b>מבחן (holdout)</b></td><td>30 משפטים קבועים (prompts/test-set.tsv). האימון ובחירת המשפטים לא משתמשים בהם אף פעם. הם מודדים את המודל לפני האימון ואחריו.
+        ${data.test_from_test_part ? "" : " מקליטים אותם בחלק 3 של סשן (מבחן הערכה)."}</td>
+        <td>${data.test_clips}${data.test_from_test_part ? "" : ` <span class="muted">(${data.test_clips ? "מתוך חלק המשפטים" : "לא הוקלט"})</span>`}</td><td>${data.test_minutes}</td></tr>
+    </tbody></table>
+    ${notes.map((n) => `<div class="warn-line">${esc(n)}</div>`).join("")}
+    <h2 style="font-size:16px;margin-top:6px">אימון (LoRA)</h2>
+    <div class="form">
+      <div class="field"><label for="pEpochs">מחזורים</label><input type="number" id="pEpochs" min="1" max="50" value="${cfg.train.epochs}"></div>
+      <div class="field"><label for="pLr">קצב למידה</label><input type="number" id="pLr" step="0.0001" min="0.000001" max="0.01" value="${cfg.train.lr}"></div>
+      <div class="field"><label for="pRank">דרגת LoRA</label><input type="number" id="pRank" min="2" max="128" value="${cfg.train.rank}"></div>
+      <div class="field"><label for="pBatch">גודל אצווה</label><input type="number" id="pBatch" min="1" max="16" value="${cfg.train.batch}"></div>
+      <div class="field check"><input type="checkbox" id="pWords" ${cfg.train.with_words ? "checked" : ""}><label for="pWords">גם מבחני המילים</label></div>
+      <button class="primary" id="pTrainBtn" ${training || !data.train_clips ? "disabled" : ""}>אימון</button>
+    </div>
+    ${training ? `<div class="chips"><span class="chip run">${esc(stageLabel(job))}${job.total ? ` · ${job.done} מתוך ${job.total}` : ""}${job.loss != null && job.stage === "train" ? ` · loss ${job.loss}` : ""}</span></div>
+      <div class="s-prog"><div class="track ${job.total ? "" : "wait"}"><div style="width:${pct(job)}%"></div></div></div>` : ""}
+    ${job?.state === "error" ? `<div class="warn-line" style="white-space:pre-wrap;direction:ltr;text-align:left">${esc(job.error)}</div>` : ""}
+    ${asr.runs.length ? `<table class="runs"><thead><tr><th>אימון</th><th>נתונים</th><th>מחזורים · קצב · דרגה</th>
+      <th>WER מבחן: בסיסי → חדש</th><th>WER בדיקה</th><th></th></tr></thead><tbody>${runRows}</tbody></table>` : ""}`;
+
+  $("stageLlm").innerHTML = `
+    <div class="stage-head"><span class="step-num">2</span><h2>תיקון לפי ההקשר (מודל שפה)</h2>
+      <span class="chip">לא פעיל · מתוכנן לגרסה מתקדמת</span></div>
+    <div class="stage-model">${esc(cfg.llm.model)}</div>
+    <p class="note">מודל שפה יתקן את התמלול לפי המשפטים הקודמים, למשל "מלך" ← "מלח" כשההקשר הוא בישול. השלב הזה עדיין לא מומש. ההגדרות נשמרות לשימוש בעתיד.</p>
+    <div class="form">
+      <div class="field"><label for="pLlm">מודל</label><select id="pLlm">${d.llm_models.map((m) =>
+        `<option ${m === cfg.llm.model ? "selected" : ""}>${esc(m)}</option>`).join("")}</select></div>
+    </div>`;
+
+  const tts = d.tts;
+  $("stageTts").innerHTML = `
+    <div class="stage-head"><span class="step-num">3</span><h2>הקראה</h2><span class="chip ok">פעיל</span></div>
+    <div class="stage-model">${esc(tts.engine)} · ${esc(tts.os)}</div>
+    <div class="form">
+      <div class="field"><label for="pVoice">קול</label><select id="pVoice">${(tts.voices.length ? tts.voices : [{name: cfg.tts.voice}]).map((v) =>
+        `<option ${v.name === cfg.tts.voice ? "selected" : ""}>${esc(v.name)}</option>`).join("")}</select></div>
+      <div class="field"><label for="pRate">קצב (מילים בדקה)</label><input type="number" id="pRate" min="80" max="400" step="10" value="${cfg.tts.rate}"></div>
+      <div class="field" style="flex:1"><label for="pSayText">טקסט לדוגמה</label><input id="pSayText" value="שלום, זה הקול שלי."></div>
+      <button class="ghost" id="pSayBtn">השמעה</button>
+    </div>
+    ${tts.voices.length ? "" : '<div class="warn-line">לא נמצא קול בעברית. הוסיפו את הקול "Carmit" בהגדרות המערכת: נגישות ← תוכן מדובר.</div>'}`;
+
+  // events
+  $("pBase").onchange = () => savePipeline({asr: {base: $("pBase").value}});
+  $("pLlm").onchange = () => savePipeline({llm: {model: $("pLlm").value}});
+  $("pVoice").onchange = () => savePipeline({tts: {voice: $("pVoice").value}});
+  $("pRate").onchange = () => savePipeline({tts: {rate: +$("pRate").value}});
+  for (const id of ["pEpochs", "pLr", "pRank", "pBatch", "pWords"]) $(id).onchange = saveTrain;
+  $("pTrainBtn").onclick = async () => {
+    await saveTrain();
+    try { await api("/api/pipeline/train", {speaker: d.speaker}); await openPipeline(d.speaker); }
+    catch (e) { $("pError").textContent = "שגיאה: " + e.message; }
+  };
+  $("pSayBtn").onclick = () => api("/api/pipeline/say", {text: $("pSayText").value}).catch((e) => { $("pError").textContent = e.message; });
+  document.querySelectorAll("#stageAsr [data-use]").forEach((b) => {
+    b.onclick = async () => {
+      try { await api("/api/pipeline/active", {speaker: d.speaker, run: b.dataset.use}); await openPipeline(d.speaker); }
+      catch (e) { $("pError").textContent = "שגיאה: " + e.message; }
+    };
+  });
+}
+async function saveTrain() {
+  await savePipeline({train: {epochs: +$("pEpochs").value, lr: +$("pLr").value, rank: +$("pRank").value,
+                              batch: +$("pBatch").value, with_words: $("pWords").checked}});
+}
+$("pipelineBtn").onclick = () => openPipeline();
+$("pipelineBackBtn").onclick = openHome;
+$("pSpeaker").onchange = () => openPipeline($("pSpeaker").value);
+
 // ---------- settings ----------
 $("settingsBtn").onclick = async () => {
   $("settingsError").textContent = "";
@@ -989,10 +1208,11 @@ $("settingsSaveBtn").onclick = async () => {
 // ---------- transcription progress (all screens) ----------
 const jobRunning = (j) => !!j && (j.state === "live" || j.state === "running");
 const pct = (j) => (j.total ? Math.round((j.done / j.total) * 100) : 0);
-let jobsSeen = {};
+let jobsSeen = {}, lostCount = 0;
 async function pollJobs() {
   let jobs = {};
-  try { jobs = (await api("/api/jobs")).jobs; } catch (e) { return; }
+  try { jobs = (await api("/api/jobs")).jobs; lostCount = 0; $("lost").classList.remove("on"); }
+  catch (e) { if (++lostCount >= 3) $("lost").classList.add("on"); return; }
   const recording = $("session").classList.contains("on");
   const entries = Object.entries(jobs);
   const bar = $("jobbar");
@@ -1004,10 +1224,14 @@ async function pollJobs() {
     const [name, j] = entries[0];
     bar.dataset.name = name;
     bar.classList.toggle("error", j.state === "error");
-    const [gname, part] = name.split("/");
-    $("jobText").innerHTML = (j.state === "error" ? `שגיאה בתמלול: ${esc(j.error)}`
-      : j.done === 0 ? "מתמלל… (טעינת המודל)" : `מתמלל: ${j.done} מתוך ${j.total}`)
-      + ` · ${PART_NAME[part] || ""} · <bdi>${esc(gname)}</bdi>`;
+    if (name.startsWith("train:")) {
+      $("jobText").innerHTML = j.state === "error" ? "שגיאה באימון" : `אימון מודל התמלול: ${esc(j.stage || "")} ${j.total ? `${j.done} מתוך ${j.total}` : ""} · <bdi>${esc(name.slice(6))}</bdi>`;
+    } else {
+      const [gname, part] = name.split("/");
+      $("jobText").innerHTML = (j.state === "error" ? `שגיאה בתמלול: ${esc(j.error)}`
+        : j.done === 0 ? "מתמלל… (טעינת המודל)" : `מתמלל: ${j.done} מתוך ${j.total}`)
+        + ` · ${PART_NAME[part] || ""} · <bdi>${esc(gname)}</bdi>`;
+    }
     $("jobTrack").classList.toggle("wait", j.done === 0 && j.state !== "error");
     $("jobFill").style.width = pct(j) + "%";
   }
@@ -1016,10 +1240,15 @@ async function pollJobs() {
   const touched = [...ended, ...entries.filter(([, j]) => jobRunning(j)).map(([n]) => n)];
   if (touched.length && $("home").classList.contains("on")) openHome();
   if ($("group").classList.contains("on") && G.data && touched.some((n) => n.startsWith(G.data.name + "/"))) openGroup(G.data.name);
+  if ($("pipeline").classList.contains("on") && P.data && touched.includes("train:" + P.data.speaker)
+      && !document.activeElement?.closest?.("#pipeline .form")) openPipeline(P.data.speaker);
   jobsSeen = Object.fromEntries(entries.filter(([, j]) => jobRunning(j)));
 }
 setInterval(pollJobs, 1000);
-$("jobbar").onclick = () => { const n = $("jobbar").dataset.name; if (n) openGroup(n.split("/")[0]); };
+$("jobbar").onclick = () => {
+  const n = $("jobbar").dataset.name;
+  if (n?.startsWith("train:")) openPipeline(n.slice(6)); else if (n) openGroup(n.split("/")[0]);
+};
 
 document.addEventListener("keydown", (e) => {
   for (const id of ["confirmOverlay", "settingsOverlay"]) {
@@ -1054,6 +1283,7 @@ window.addEventListener("pagehide", () => navigator.sendBeacon("/api/bye"));
 
 if (location.hash.startsWith("#review/")) openReview(decodeURIComponent(location.hash.slice(8)));
 else if (location.hash.startsWith("#group/")) openGroup(decodeURIComponent(location.hash.slice(7)));
+else if (location.hash === "#pipeline") openPipeline();
 else openHome().catch((e) => { $("homeError").textContent = "שגיאה: " + e.message; });
 </script>
 </body>

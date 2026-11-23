@@ -28,6 +28,7 @@ from .testset import TEST_TSV
 RECORDINGS = review.RECORDINGS
 PARTS = review.PARTS
 LIST_FILE = "sentence-list.tsv"
+CARRIER_TEXT = "המילה היא"  # the carrier phrase of the word test (no niqqud)
 
 
 def safe_name(name: str) -> str:
@@ -110,7 +111,11 @@ def group_detail(name: str) -> dict:
     meta = json.loads((folder / "group.json").read_text())
     parts = {p: part_status(folder, p) for p in PARTS}
     list_path = folder / LIST_FILE
+    # The test set is enough one time for each speaker. Find if another session has it.
+    test_elsewhere = any(g["speaker"] == meta["speaker"] and g["name"] != name and g["parts"]["test"]["recorded"]
+                         for g in list_groups())
     return {"name": name, "speaker": meta["speaker"], "created": meta["created"], "parts": parts,
+            "test_elsewhere": test_elsewhere,
             "list_ready": list_path.exists(),
             "list_count": len(read_tsv(list_path)) if list_path.exists() else 0}
 

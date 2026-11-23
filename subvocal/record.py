@@ -40,7 +40,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
-from . import groups, review, transcriber
+from . import groups, pipeline, review, settings, transcriber
 from .transcriber import LiveTranscription
 from .corpus import read_tsv
 from .phonetics import REPO_ROOT
@@ -53,23 +53,6 @@ CHROME_PROFILE = Path.home() / "Library" / "Caches" / "subvocal-chrome"
 OUT_RATE = 16000
 CARRIER = "המילה היא"
 CARRIER_NIQQUD = unicodedata.normalize("NFC", "הַמִּילָּה הִיא")
-
-
-SETTINGS = REPO_ROOT / "data" / "settings.json"
-DEFAULT_SETTINGS = {"plan_sentences": 40}
-
-
-def load_settings() -> dict:
-    saved = json.loads(SETTINGS.read_text()) if SETTINGS.exists() else {}
-    return {**DEFAULT_SETTINGS, **{k: v for k, v in saved.items() if k in DEFAULT_SETTINGS}}
-
-
-def save_settings(values: dict) -> None:
-    n = int(values.get("plan_sentences", 40))
-    if not 5 <= n <= 300:
-        raise ValueError("the number of sentences must be from 5 to 300")
-    SETTINGS.parent.mkdir(parents=True, exist_ok=True)
-    SETTINGS.write_text(json.dumps({"plan_sentences": n}, indent=1))
 
 
 def items_from(rows: list[dict]) -> list[dict]:
@@ -265,7 +248,7 @@ class App:
         has_list = (folder / groups.LIST_FILE).exists()
         if has_list and cache.exists():
             return json.loads(cache.read_text())
-        result = make_list(name, int(load_settings()["plan_sentences"]), keep=has_list)
+        result = make_list(name, int(settings.load()["plan_sentences"]), keep=has_list)
         cache.write_text(json.dumps(result, ensure_ascii=False, indent=1))
         return result
 
@@ -295,9 +278,15 @@ class App:
         if path == "/api/jobs":
             return {"jobs": {k: v for k, v in review.JOBS.items() if v.get("state") in ("live", "running", "error")}}
         if path == "/api/settings":
-            if body:
-                save_settings({**load_settings(), **body})
-            return load_settings()
+            return settings.save(body) if body else settings.load()
+        if path == "/api/pipeline":
+            return pipeline.status(body.get("speaker"))
+        if path == "/api/pipeline/train":
+            return pipeline.start_training(groups.safe_name(body["speaker"]))
+        if path == "/api/pipeline/active":
+            return pipeline.set_active(groups.safe_name(body["speaker"]), body.get("run", ""))
+        if path == "/api/pipeline/say":
+            return pipeline.say_sample(str(body.get("text", ""))[:300])
         if path == "/api/sounds":
             from .plan import session_sounds
             return session_sounds(body["name"])
@@ -389,8 +378,15 @@ def make_handler(app: App):
 
 
 def open_window(url: str) -> None:
-    """Open a Chrome window in app mode. If Chrome is not installed, use the default browser."""
+    """Open a Chrome window in app mode. If Chrome is not installed, use the default browser.
+
+    First close the app windows of an earlier run. They have no server, and a click in them
+    shows an empty screen. The app windows use their own Chrome profile, so this does not
+    touch the other Chrome windows of the user.
+    """
     if CHROME.exists():
+        subprocess.run(["pkill", "-f", f"user-data-dir={CHROME_PROFILE}"], check=False)
+        time.sleep(1)
         subprocess.Popen([
             "open", "-na", str(CHROME), "--args",
             f"--app={url}", f"--user-data-dir={CHROME_PROFILE}",

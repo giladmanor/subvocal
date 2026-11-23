@@ -13,6 +13,14 @@ dependencies = [
     "soxr",
 ]
 
+[project.optional-dependencies]
+# Fine-tuning of the transcription model (LoRA). Install with: uv pip install -e ".[train]"
+train = [
+    "torch",
+    "transformers",
+    "peft",
+]
+
 [build-system]
 requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
