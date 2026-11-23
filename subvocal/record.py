@@ -15,7 +15,7 @@ Session folder: data/user-recordings/<speaker>-<YYYY-MM-DD>-<HHMMSS>/
     session.json        the speaker, the prompt list, the items, and a clock check
     prompts.tsv         a copy of the prompt list
     <id>.wav            one 16 kHz file for each card (the last take, if the speaker read it again)
-    hyp.tsv             the transcripts, after you click "transcribe" in the review screen
+    hyp.tsv             the transcripts. The app transcribes during and after the recording.
 
 Usage:
     python -m subvocal.record                       # opens the app
@@ -40,7 +40,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
-from . import review
+from . import review, transcriber
+from .transcriber import LiveTranscription
 from .corpus import PROBE_TSV, read_tsv
 from .phonetics import REPO_ROOT
 
@@ -58,6 +59,23 @@ def safe_name(name: str) -> str:
     """Make a speaker name safe for a folder name. Keep Hebrew and Latin letters and digits."""
     name = re.sub(r"[^\w-]+", "-", name.strip(), flags=re.UNICODE).strip("-_")
     return name.lower()
+
+
+SETTINGS = REPO_ROOT / "data" / "settings.json"
+DEFAULT_SETTINGS = {"plan_sentences": 40}
+
+
+def load_settings() -> dict:
+    saved = json.loads(SETTINGS.read_text()) if SETTINGS.exists() else {}
+    return {**DEFAULT_SETTINGS, **{k: v for k, v in saved.items() if k in DEFAULT_SETTINGS}}
+
+
+def save_settings(values: dict) -> None:
+    n = int(values.get("plan_sentences", 40))
+    if not 5 <= n <= 300:
+        raise ValueError("the number of sentences must be from 5 to 300")
+    SETTINGS.parent.mkdir(parents=True, exist_ok=True)
+    SETTINGS.write_text(json.dumps({"plan_sentences": n}, indent=1))
 
 
 def list_options() -> list[dict]:
@@ -97,6 +115,9 @@ class Recorder:
         self.overflows = 0
         self.wall_start = 0.0
         self.wall_end = 0.0
+        self.running = False
+        self._blocks: list = []   # a copy in memory, for the live transcription
+        self._starts: list[int] = []
         self._q: queue.Queue = queue.Queue()
         self._stream = None
         self._writer = None
@@ -109,7 +130,10 @@ class Recorder:
         def callback(data, frames, _time, status):
             if status.input_overflow:
                 self.overflows += 1
-            self._q.put(data.copy())
+            block = data[:, 0].copy()
+            self._q.put(block)
+            self._starts.append(self.frames)
+            self._blocks.append(block)
             self.frames += frames
             self.level = float(np.sqrt(np.mean((data.astype("float32") / 32768) ** 2)))
 
@@ -124,14 +148,28 @@ class Recorder:
         self._writer = threading.Thread(target=write, daemon=True)
         self._writer.start()
         self._stream = sd.InputStream(samplerate=self.rate, channels=1, dtype="int16", callback=callback)
+        self.running = True
         self._stream.start()
         self.wall_start = time.time()
+
+    def slice(self, start: int, end: int):
+        """Frames start to end as float32, the same values as the FLAC file gives."""
+        import bisect
+
+        import numpy as np
+
+        first = max(0, bisect.bisect_right(self._starts, start) - 1)
+        last = bisect.bisect_left(self._starts, end)
+        blocks, offset = self._blocks[first:last], self._starts[first]
+        audio = np.concatenate(blocks) if blocks else np.zeros(0, dtype="int16")
+        return audio[start - offset:end - offset].astype("float32") / 32768
 
     def stop(self) -> None:
         if self._stream is not None:
             self._stream.stop()
             self._stream.close()
             self._stream = None
+            self.running = False
             self.wall_end = time.time()
             self._q.put(None)
             self._writer.join()
@@ -175,6 +213,7 @@ class Session:
             "rate": self.rec.rate, "out_rate": OUT_RATE, "items": self.items,
         }
         self._write_meta()
+        self.live = LiveTranscription(self.folder.name, self.folder, self.rec, len(self.items))
         self.rec.start()
 
     def _write_meta(self) -> None:
@@ -185,7 +224,10 @@ class Session:
         if index is not None:
             ev["index"] = index
             ev["id"] = self.items[index]["id"]
+        prev = self.events[-1] if self.events else None
         self.events.append(ev)
+        if prev is not None and prev["type"] == "show":
+            self.live.take(prev["id"], prev["t"], ev["t"])
         (self.folder / "events.json").write_text(json.dumps({"events": self.events}, ensure_ascii=False))
 
     def finish(self) -> dict:
@@ -199,6 +241,8 @@ class Session:
                               "overflows": self.rec.overflows}
         self._write_meta()
         result = split_session(self.folder)
+        kept = [t for t in review.compute_takes(self.events, self.rec.frames, self.rec.rate) if t["kept"]]
+        self.live.finish(kept)
         result["missing"] = [it["id"] for it in self.items if it["id"] not in result["ids"]]
         result["folder"] = str(self.folder.relative_to(REPO_ROOT))
         result["name"] = self.folder.name
@@ -238,10 +282,19 @@ class App:
         if path.startswith("/api/session/"):
             return review.load_session(path.removeprefix("/api/session/"))
         if path == "/api/transcribe":
-            return review.start_transcription(body["name"])
+            return transcriber.start_transcription(body["name"])
+        if path == "/api/jobs":
+            return {"jobs": {k: v for k, v in review.JOBS.items() if v.get("state") in ("live", "running", "error")}}
+        if path == "/api/settings":
+            if body:
+                save_settings({**load_settings(), **body})
+            return load_settings()
+        if path == "/api/profile":
+            from .plan import profile_sounds
+            return profile_sounds(safe_name(body["speaker"]))
         if path == "/api/plan":
             from .plan import make_plan
-            return make_plan(safe_name(body["speaker"]), int(body.get("n", 40)))
+            return make_plan(safe_name(body["speaker"]), int(load_settings()["plan_sentences"]))
         with self.lock:
             s = self.session
             if path == "/api/config":
@@ -272,8 +325,7 @@ class App:
             if path in ("/api/finish", "/api/bye"):  # "bye": the window closed during a session
                 self.session = None
                 result = s.finish()
-                if path == "/api/finish":  # not on "bye": the server stops soon after
-                    result["transcribe"] = review.start_transcription(result["name"])
+                result["transcribe"] = review.JOBS.get(result["name"], {})
                 return result
         return {"error": "unknown path"}
 

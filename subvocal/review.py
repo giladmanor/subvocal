@@ -7,9 +7,6 @@ See subvocal/record.py.
 from __future__ import annotations
 
 import json
-import subprocess
-import sys
-import threading
 from pathlib import Path
 
 from .corpus import read_tsv
@@ -71,6 +68,7 @@ def list_sessions() -> list[dict]:
             "name": folder.name, "speaker": meta.get("speaker", ""), "started": meta.get("started", ""),
             "list": meta.get("list", ""), "items": len(meta.get("items", [])),
             "saved": len(list(folder.glob("*.wav"))), "transcribed": (folder / "hyp.tsv").exists(),
+            "transcribe": JOBS.get(folder.name, {}),
             "complete": (folder / "events.json").exists() and (folder / "full-session.flac").exists(),
         })
     return out
@@ -144,30 +142,7 @@ def load_session(name: str) -> dict:
 
 # ---------------------------------------------------------------- transcription jobs
 
+# The state of the transcription of each session, for the app screens:
+# {"state": "live" | "running" | "done" | "error", "done": n, "total": n, "error": ""}.
+# The jobs run in subvocal/transcriber.py.
 JOBS: dict[str, dict] = {}
-
-
-def start_transcription(name: str) -> dict:
-    folder = session_dir(name)
-    job = JOBS.get(name)
-    if job and job["state"] == "running":
-        return job
-    total = len(list(folder.glob("*.wav")))
-    job = {"state": "running", "done": 0, "total": total, "error": ""}
-    JOBS[name] = job
-
-    def run():
-        cmd = [sys.executable, "-u", "-m", "subvocal.transcribe", "--audio", str(folder), "--out", str(folder / "hyp.tsv")]
-        proc = subprocess.Popen(cmd, cwd=REPO_ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-        tail = []
-        for line in proc.stdout:
-            tail = (tail + [line.rstrip()])[-5:]
-            if "\t" in line:
-                job["done"] += 1
-        proc.wait()
-        job["state"] = "done" if proc.returncode == 0 else "error"
-        if proc.returncode != 0:
-            job["error"] = "\n".join(tail)
-
-    threading.Thread(target=run, daemon=True).start()
-    return job

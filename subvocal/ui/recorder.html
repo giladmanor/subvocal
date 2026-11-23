@@ -208,7 +208,28 @@
   .mark-warn { color: #c98a00; font-weight: 700; }
 
   /* ---------- plan panel ---------- */
-  #planOverlay { position: fixed; z-index: 20; padding: 16px; }
+  .modal { position: fixed; z-index: 20; padding: 16px; }
+  .panel .start-row { justify-content: space-between; border-top: 1px solid var(--line); padding-top: 14px; }
+  .panel .hint { font-size: 13px; color: var(--muted); }
+  .s-row { grid-template-columns: 1fr auto auto auto; }
+  .s-plan { font-size: 13px; padding: 6px 12px; border-radius: 10px; }
+  .s-prog { grid-column: 1 / -1; }
+
+  /* ---------- transcription progress ---------- */
+  .jobbar {
+    position: fixed; top: 0; inset-inline: 0; z-index: 30; display: none; align-items: center; gap: 14px;
+    padding: 10px 20px; background: var(--accent); color: var(--accent-ink); font-weight: 600; cursor: pointer;
+    box-shadow: 0 4px 14px rgb(0 0 0 / .2);
+  }
+  .jobbar.on { display: flex; }
+  .jobbar.error { background: var(--rec); }
+  .jobbar .track { flex: 1; height: 10px; border-radius: 5px; background: color-mix(in srgb, var(--accent-ink) 25%, transparent); overflow: hidden; }
+  .track > div { height: 100%; width: 0; background: var(--accent-ink); border-radius: 5px; transition: width .4s; }
+  .track.wait > div { width: 30% !important; animation: slide 1.2s ease-in-out infinite alternate; }
+  @keyframes slide { from { margin-inline-start: 0; } to { margin-inline-start: 70%; } }
+  .s-prog .track { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+  .s-prog .track > div { background: var(--accent); }
+  body.has-jobbar .screen { top: 44px; }
   .panel { box-shadow: var(--shadow); background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 22px 26px; width: min(620px, 100%); max-height: 90vh; overflow: auto; }
   .panel h2 { margin: 0 0 6px; font-size: 20px; }
   .panel p { margin: 6px 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
@@ -235,7 +256,10 @@
     <button id="startBtn" class="primary">התחלה</button>
     <div class="error" id="setupError"></div>
     <div class="note">המיקרופון פועל לאורך כל ההקלטה, מההתחלה ועד הסיום. אפשר לחזור לכרטיס ולקרוא אותו שוב.</div>
-    <button class="link" id="openSessionsBtn">הקלטות קודמות ←</button>
+    <div style="display:flex;justify-content:space-between">
+      <button class="link" id="openSessionsBtn">הקלטות קודמות ←</button>
+      <button class="link" id="settingsBtn">⚙ הגדרות</button>
+    </div>
   </div>
 </section>
 
@@ -326,7 +350,6 @@
     <button class="ghost" id="reviewBackBtn">→ הקלטות</button>
     <h1 id="rTitle"></h1>
     <span class="progress-text" id="rProgress"></span>
-    <button class="ghost" id="planBtn" title="בחירת משפטים לפי הצלילים שהמודל טועה בהם">רשימת משפטים לפי האבחון</button>
     <button class="primary" id="transcribeBtn">תמלול</button>
   </div>
   <div class="r-stats" id="rStats"></div>
@@ -349,21 +372,37 @@
   </div>
 </section>
 
-<div class="overlay" id="planOverlay">
+<div class="jobbar" id="jobbar" title="פתיחת ההקלטה">
+  <span id="jobText"></span>
+  <div class="track" id="jobTrack"><div id="jobFill"></div></div>
+</div>
+
+<div class="overlay modal" id="planOverlay">
   <div class="panel">
-    <h2>רשימת משפטים לפי האבחון</h2>
-    <p>האפליקציה בודקת את כל ההקלטות המתומללות של הדובר, ומוצאת את הצלילים שהמודל טועה בהם.
-       אחר כך היא בוחרת משפטים קצרים שעדיין לא הוקלטו, עם יותר מופעים של הצלילים האלה.</p>
-    <div class="row">
-      <label for="planN">מספר משפטים</label>
-      <input type="number" id="planN" min="5" max="300" step="5" value="40">
-      <button class="primary" id="planMakeBtn">בניית הרשימה</button>
-      <span class="progress-text" id="planStatus"></span>
+    <h2>אבחון: <span id="planWho"></span></h2>
+    <p id="planSub"></p>
+    <div id="planResult"><p>טוען…</p></div>
+    <div class="row start-row">
+      <span class="hint" id="planStatus"></span>
+      <span>
+        <button class="ghost" id="planCloseBtn">סגירה</button>
+        <button class="primary" id="planRecordBtn" disabled>התחלת הקלטת משפטים</button>
+      </span>
     </div>
-    <div id="planResult"></div>
+  </div>
+</div>
+
+<div class="overlay modal" id="settingsOverlay">
+  <div class="panel">
+    <h2>הגדרות</h2>
     <div class="row">
-      <button class="primary" id="planRecordBtn" style="display:none">הקלטה עם הרשימה החדשה</button>
-      <button class="ghost" id="planCloseBtn">סגירה</button>
+      <label for="setPlanN">מספר המשפטים ברשימה לפי האבחון</label>
+      <input type="number" id="setPlanN" min="5" max="300" step="5">
+    </div>
+    <div class="row">
+      <button class="primary" id="settingsSaveBtn">שמירה</button>
+      <button class="ghost" id="settingsCloseBtn">ביטול</button>
+      <span class="hint error" id="settingsError"></span>
     </div>
   </div>
 </div>
@@ -418,7 +457,17 @@ async function start() {
   $("setupError").textContent = "";
   $("startBtn").disabled = true;
   try {
-    const res = await api("/api/start", {speaker, list: $("list").value});
+    await startSession(speaker, $("list").value);
+  } catch (e) {
+    $("setupError").textContent = "שגיאה: " + e.message;
+  } finally {
+    $("startBtn").disabled = false;
+  }
+}
+
+async function startSession(speaker, list) {
+  {
+    const res = await api("/api/start", {speaker, list});
     items = res.items;
     index = 0; paused = false; active = true;
     $("whoName").textContent = speaker;
@@ -428,10 +477,6 @@ async function start() {
     await countdown();
     render(0, null);
     api("/api/show", {index: 0});
-  } catch (e) {
-    $("setupError").textContent = "שגיאה: " + e.message;
-  } finally {
-    $("startBtn").disabled = false;
   }
 }
 
@@ -582,7 +627,13 @@ async function openSessions() {
     row.innerHTML = `
       <div><div class="s-name">${esc(s.speaker)}</div><div class="s-sub">${esc(s.name)} · ${esc(s.list)}</div></div>
       <span class="pill">${s.saved} / ${s.items} כרטיסים</span>
-      <span class="pill ${s.transcribed ? "ok" : ""}">${s.transcribed ? "תומלל" : "לא תומלל"}</span>`;
+      ${jobRunning(s.transcribe) ? `<span class="pill ok">מתמלל ${s.transcribe.done} / ${s.transcribe.total}</span>`
+        : `<span class="pill ${s.transcribed ? "ok" : ""}">${s.transcribed ? "תומלל" : "לא תומלל"}</span>`}
+      ${s.transcribed && !jobRunning(s.transcribe) && s.speaker
+        ? `<button class="ghost s-plan" title="בחירת משפטים לפי הצלילים שהמודל טועה בהם">רשימת משפטים לפי האבחון</button>` : "<span></span>"}
+      ${jobRunning(s.transcribe) ? `<div class="s-prog"><div class="track"><div style="width:${pct(s.transcribe)}%"></div></div></div>` : ""}`;
+    const planBtn = row.querySelector(".s-plan");
+    if (planBtn) planBtn.onclick = (e) => { e.stopPropagation(); openPlan(s.speaker); };
     if (s.complete) row.onclick = () => openReview(s.name);
     else row.style.opacity = .5;
     $("sList").appendChild(row);
@@ -603,7 +654,7 @@ async function openReview(name) {
   R.buffer = await R.ctx.decodeAudioData(bytes);
   R.peaks = null;
   drawWave();
-  if (R.data.transcribe.state === "running") watchTranscribe();
+  if (jobRunning(R.data.transcribe)) watchTranscribe();
 }
 
 function renderReview() {
@@ -778,8 +829,8 @@ function watchTranscribe() {
     const d = await api(`/api/session/${encodeURIComponent(name)}`).catch(() => null);
     if (!d || !R.data || R.data.name !== name) return;
     const j = d.transcribe;
-    $("rProgress").textContent = j.state === "running" ? `מתמלל… ${j.done} / ${j.total} (טעינת המודל לוקחת כמה שניות)` : "";
-    if (j.state !== "running") {
+    $("rProgress").textContent = "";
+    if (!jobRunning(j)) {
       clearInterval(R.poll);
       $("transcribeBtn").disabled = false;
       if (j.state === "error") $("rProgress").textContent = "שגיאה בתמלול: " + j.error;
@@ -798,46 +849,108 @@ $("transcribeBtn").onclick = transcribe;
 
 // ---------- plan ----------
 let PLAN = null;
-$("planBtn").onclick = () => {
-  $("planResult").innerHTML = ""; $("planStatus").textContent = ""; $("planRecordBtn").style.display = "none";
+async function openPlan(speaker) {
+  PLAN = null;
+  $("planWho").textContent = speaker;
+  $("planSub").textContent = "";
+  $("planResult").innerHTML = "<p>טוען…</p>";
+  $("planStatus").textContent = "";
+  $("planRecordBtn").disabled = true;
   $("planOverlay").classList.add("on");
-};
-$("planCloseBtn").onclick = () => $("planOverlay").classList.remove("on");
-$("planMakeBtn").onclick = async () => {
-  $("planMakeBtn").disabled = true;
-  $("planStatus").textContent = "בונה...";
+  // The list is made in the background. Show a message only if it takes more than 2 seconds.
+  const slow = setTimeout(() => { if (!PLAN) $("planStatus").textContent = "מכין את רשימת המשפטים…"; }, 2000);
+  const listJob = api("/api/plan", {speaker});
   try {
-    PLAN = await api("/api/plan", {speaker: R.data.meta.speaker, n: +$("planN").value || 40});
-    const max = Math.max(...PLAN.sounds.map((x) => x.rate), 0.01);
-    $("planResult").innerHTML = `
-      <p>${PLAN.sessions.length} הקלטות של ${esc(PLAN.speaker)} · ${PLAN.recorded} משפטים כבר הוקלטו · ${PLAN.remaining} נשארו</p>
-      <table><thead><tr><th>צליל</th><th>טעויות</th><th>שיעור</th><th></th><th>ברשימה</th><th>ברשימה רגילה</th></tr></thead><tbody>
-      ${PLAN.sounds.map((x) => `<tr><td><b>${esc(x.hebrew)}</b> <span style="color:var(--muted);direction:ltr;display:inline-block">${esc(x.phoneme)}</span></td>
-        <td>${x.err} / ${x.n}</td><td>${Math.round(x.rate * 100)}%</td>
-        <td style="width:30%"><div class="bar" style="width:${(x.rate / max) * 100}%"></div></td>
-        <td>${x.in_list}</td><td style="color:var(--muted)">${x.in_plain}</td></tr>`).join("")}
-      </tbody></table>
-      <p>"ברשימה" הוא מספר המופעים של הצליל ב-${PLAN.count} המשפטים שנבחרו. "ברשימה רגילה" הוא המספר ברשימה באותו גודל, בלי האבחון.</p>
-      <p>הרשימה נשמרה בקובץ <span style="direction:ltr;display:inline-block">${esc(PLAN.list)}</span>.</p>`;
-    $("planStatus").textContent = "";
-    $("planRecordBtn").style.display = "";
-  } catch (e) { $("planStatus").textContent = "שגיאה: " + e.message; }
-  $("planMakeBtn").disabled = false;
-};
+    const prof = await api("/api/profile", {speaker});
+    if (!PLAN) renderPlan(prof);
+  } catch (e) { $("planResult").innerHTML = `<p class="error">שגיאה: ${esc(e.message)}</p>`; }
+  try {
+    PLAN = await listJob;
+    renderPlan(PLAN);
+    $("planStatus").textContent = `${PLAN.count} משפטים מוכנים`;
+    $("planRecordBtn").disabled = PLAN.count === 0;
+  } catch (e) { $("planStatus").textContent = "שגיאה ביצירת הרשימה: " + e.message; }
+  clearTimeout(slow);
+}
+function renderPlan(d) {
+  const max = Math.max(...d.sounds.map((x) => x.rate), 0.01);
+  const hasList = "count" in d;
+  $("planSub").textContent = `${d.sessions.length} הקלטות מתומללות · ${d.recorded} משפטים כבר הוקלטו · ${d.remaining} נשארו`;
+  $("planResult").innerHTML = `
+    <table><thead><tr><th>צליל</th><th>טעויות</th><th>שיעור</th><th></th><th>ברשימה החדשה</th><th>ברשימה רגילה</th></tr></thead><tbody>
+    ${d.sounds.map((x) => `<tr><td><b>${esc(x.hebrew)}</b> <span style="color:var(--muted);direction:ltr;display:inline-block">${esc(x.phoneme)}</span></td>
+      <td>${x.err} / ${x.n}</td><td>${Math.round(x.rate * 100)}%</td>
+      <td style="width:28%"><div class="bar" style="width:${(x.rate / max) * 100}%"></div></td>
+      <td>${hasList ? x.in_list : "…"}</td><td style="color:var(--muted)">${hasList ? x.in_plain : "…"}</td></tr>`).join("")}
+    </tbody></table>
+    <p>"ברשימה החדשה": מספר המופעים של הצליל במשפטים שנבחרו. "ברשימה רגילה": המספר ברשימה באותו גודל, בלי האבחון.</p>`;
+}
+$("planCloseBtn").onclick = () => $("planOverlay").classList.remove("on");
 $("planRecordBtn").onclick = async () => {
-  $("planOverlay").classList.remove("on");
-  show("setup");
-  await loadConfig();
-  $("list").value = PLAN.list;
-  $("speaker").value = PLAN.speaker;
-  $("startBtn").focus();
+  if (!PLAN) return;
+  $("planRecordBtn").disabled = true;
+  try {
+    await startSession(PLAN.speaker, PLAN.list);
+    $("planOverlay").classList.remove("on");
+  } catch (e) {
+    $("planStatus").textContent = "שגיאה: " + e.message;
+    $("planRecordBtn").disabled = false;
+  }
 };
-window.addEventListener("resize", () => { if ($("review").classList.contains("on")) { R.peaks = null; drawWave(); } });
+
+// ---------- settings ----------
+$("settingsBtn").onclick = async () => {
+  $("settingsError").textContent = "";
+  $("setPlanN").value = (await api("/api/settings")).plan_sentences;
+  $("settingsOverlay").classList.add("on");
+  $("setPlanN").focus();
+};
+$("settingsCloseBtn").onclick = () => $("settingsOverlay").classList.remove("on");
+$("settingsSaveBtn").onclick = async () => {
+  try {
+    await api("/api/settings", {plan_sentences: +$("setPlanN").value});
+    $("settingsOverlay").classList.remove("on");
+  } catch (e) { $("settingsError").textContent = e.message; }
+};
+
+// ---------- transcription progress (all screens) ----------
+const jobRunning = (j) => !!j && (j.state === "live" || j.state === "running");
+const pct = (j) => (j.total ? Math.round((j.done / j.total) * 100) : 0);
+let jobsSeen = {};
+async function pollJobs() {
+  let jobs = {};
+  try { jobs = (await api("/api/jobs")).jobs; } catch (e) { return; }
+  const recording = $("session").classList.contains("on");
+  const entries = Object.entries(jobs);
+  const bar = $("jobbar");
+  // During the recording, the live transcription runs quietly. The speaker must not see it.
+  const visible = entries.length && !recording;
+  bar.classList.toggle("on", !!visible);
+  document.body.classList.toggle("has-jobbar", !!visible);
+  if (visible) {
+    const [name, j] = entries[0];
+    bar.dataset.name = name;
+    bar.classList.toggle("error", j.state === "error");
+    $("jobText").innerHTML = j.state === "error" ? `שגיאה בתמלול: ${esc(j.error)} · <bdi>${esc(name)}</bdi>`
+      : (j.done === 0 ? "מתמלל… (טעינת המודל)" : `מתמלל: ${j.done} מתוך ${j.total}`) + ` · <bdi>${esc(name)}</bdi>`;
+    $("jobTrack").classList.toggle("wait", j.done === 0 && j.state !== "error");
+    $("jobFill").style.width = pct(j) + "%";
+  }
+  // A job ended: show the new results on the open screen.
+  const ended = Object.keys(jobsSeen).filter((n) => !(n in jobs) || !jobRunning(jobs[n]));
+  if (ended.length && $("sessions").classList.contains("on")) openSessions();
+  else if ($("sessions").classList.contains("on") && entries.length) openSessions();
+  jobsSeen = Object.fromEntries(entries.filter(([, j]) => jobRunning(j)));
+}
+setInterval(pollJobs, 1000);
+$("jobbar").onclick = () => { const n = $("jobbar").dataset.name; if (n) openReview(n); };
 
 document.addEventListener("keydown", (e) => {
-  if ($("planOverlay").classList.contains("on")) {
-    if (e.key === "Escape") $("planOverlay").classList.remove("on");
-    return;
+  for (const id of ["planOverlay", "settingsOverlay"]) {
+    if ($(id).classList.contains("on")) {
+      if (e.key === "Escape") $(id).classList.remove("on");
+      return;
+    }
   }
   if ($("review").classList.contains("on")) {
     if (e.key === " ") {

@@ -45,21 +45,45 @@ def speaker_sessions(speaker: str) -> list:
     return out
 
 
-def make_plan(speaker: str, n: int = 40) -> dict:
+_PHONEMIZER: Phonemizer | None = None
+
+
+def build_profile(speaker: str) -> tuple[dict, list[str], list[str]]:
+    """The profile from all the transcribed sessions, the session names, and the recorded sentence IDs."""
+    global _PHONEMIZER
     folders = speaker_sessions(speaker)
     if not folders:
         raise ValueError(f"no transcribed sessions for the speaker: {speaker}")
-    ph = Phonemizer()
+    _PHONEMIZER = _PHONEMIZER or Phonemizer()
     profile: dict = {}
     done: list[str] = []
     for folder in folders:
         refs = read_tsv(folder / "prompts.tsv")
         hyps = {r["id"]: r["text"] for r in read_tsv(folder / "hyp.tsv")}
         is_probe = "word" in refs[0]
-        merge(profile, run(refs, hyps, is_probe, ph), folder.name)
+        merge(profile, run(refs, hyps, is_probe, _PHONEMIZER), folder.name)
         if not is_probe:
             done += [i for i in hyps if i not in done]
+    return profile, [f.name for f in folders], done
 
+
+def _sounds(profile: dict, rates: dict, top: int = 8) -> list[dict]:
+    seen = profile.get("phonemes", {})
+    best = sorted((p for p in rates if seen.get(p, {}).get("n")), key=rates.get, reverse=True)[:top]
+    return [{"phoneme": p, "hebrew": HEBREW.get(p, p), "rate": round(rates[p], 3),
+             "n": seen[p]["n"], "err": seen[p]["err"]} for p in best]
+
+
+def profile_sounds(speaker: str) -> dict:
+    """The problem sounds of the speaker. This is fast, and does not select sentences."""
+    profile, sessions, done = build_profile(speaker)
+    return {"speaker": speaker, "sessions": sessions, "recorded": len(done),
+            "remaining": len(read_tsv(SENTENCES_TSV)) - len(done),
+            "sounds": _sounds(profile, error_rates(profile))}
+
+
+def make_plan(speaker: str, n: int = 40) -> dict:
+    profile, sessions, done = build_profile(speaker)
     rates = error_rates(profile)
     weights = {p: 0.1 + r for p, r in rates.items()}
     sentences = read_tsv(SENTENCES_TSV)
@@ -75,15 +99,11 @@ def make_plan(speaker: str, n: int = 40) -> dict:
         return Counter(p for r in rows for p in flatten(split_text(r["phonemes"])))
     plain = select(sentences, {p: 1.0 for p in rates}, n, done)
     have, base = counts(chosen), counts(plain)
-    seen = profile.get("phonemes", {})
-    top = sorted((p for p in rates if seen.get(p, {}).get("n")), key=rates.get, reverse=True)[:8]
+    sounds = [{**x, "in_list": have[x["phoneme"]], "in_plain": base[x["phoneme"]]} for x in _sounds(profile, rates)]
     return {
         "speaker": speaker, "list": str(list_path.relative_to(RECORDINGS.parent.parent)),
-        "count": len(chosen), "sessions": [f.name for f in folders], "recorded": len(done),
-        "remaining": len(sentences) - len(done),
-        "sounds": [{"phoneme": p, "hebrew": HEBREW.get(p, p), "rate": round(rates[p], 3),
-                    "n": seen[p]["n"], "err": seen[p]["err"], "in_list": have[p], "in_plain": base[p]}
-                   for p in top],
+        "count": len(chosen), "sessions": sessions, "recorded": len(done),
+        "remaining": len(sentences) - len(done), "sounds": sounds,
     }
 
 
