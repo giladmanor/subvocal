@@ -4,6 +4,7 @@
         group.json            the speaker and the start time
         words/                the word test (prompts/probe.tsv): a recording folder
         sentences/            the sentences: a recording folder
+        test/                 the fixed test set (prompts/test-set.tsv): never used for training
         sentence-list.tsv     the sentences that the app selected from the word test
         profile.json          the speaker profile from the word test
         _old/                 earlier recordings of a part that the speaker recorded again
@@ -22,6 +23,7 @@ from pathlib import Path
 
 from . import review
 from .corpus import PROBE_TSV, read_tsv
+from .testset import TEST_TSV
 
 RECORDINGS = review.RECORDINGS
 PARTS = review.PARTS
@@ -128,6 +130,9 @@ def prepare_part(name: str, part: str) -> tuple[Path, Path, str]:
         archive(folder, folder / "words")
         archive(folder, folder / LIST_FILE)
         archive(folder, folder / "profile.json")
+    elif part == "test":
+        list_path = TEST_TSV
+        archive(folder, folder / "test")
     else:
         list_path = folder / LIST_FILE
         if not list_path.exists():

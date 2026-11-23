@@ -88,8 +88,9 @@
 
   /* ---------- session (group) screen ---------- */
   #group { overflow: auto; }
-  .steps { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0 14px; }
-  @media (max-width: 760px) { .steps { grid-template-columns: 1fr; } }
+  .steps { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin: 20px 0 14px; }
+  .step.test { border-style: dashed; }
+  @media (max-width: 980px) { .steps { grid-template-columns: 1fr; } }
   .step { display: flex; flex-direction: column; gap: 12px; }
   .step.off { opacity: .6; }
   .step-num { display: inline-flex; width: 26px; height: 26px; border-radius: 50%; align-items: center; justify-content: center; background: var(--line); color: var(--muted); font-size: 14px; font-weight: 700; margin-left: 8px; }
@@ -285,6 +286,7 @@
     <div class="steps">
       <div class="box step" id="stepWords"></div>
       <div class="box step" id="stepSentences"></div>
+      <div class="box step test" id="stepTest"></div>
     </div>
     <div class="box sounds" id="gSounds" style="display:none"></div>
   </div>
@@ -569,7 +571,7 @@ const sec = (s) => s.toFixed(2);
 
 const NOTE_X = `<svg class="mark-note" viewBox="0 0 24 24" aria-label="צליל אחר"><g fill="currentColor"><ellipse cx="8.5" cy="17.5" rx="4" ry="3" transform="rotate(-20 8.5 17.5)"/><rect x="11.2" y="3" width="1.9" height="14.5"/><path d="M13 3c1.2 2.6 5.2 3.4 5.2 7.4-1-1.8-3-2.6-5.2-2.8z"/></g><path d="M3 3l18 18M21 3L3 21" stroke="var(--rec)" stroke-width="1.8" stroke-linecap="round"/></svg>`;
 document.querySelector(".legend .note-x").innerHTML = NOTE_X;
-const PART_NAME = {words: "מבחן מילים", sentences: "משפטים"};
+const PART_NAME = {words: "מבחן מילים", sentences: "משפטים", test: "מבחן הערכה"};
 
 // ---------- home: the list of sessions ----------
 function resultChips(r) {
@@ -598,7 +600,7 @@ async function openHome() {
     const job = Object.values(g.parts).map((p) => p.job).find(jobRunning);
     row.innerHTML = `
       <div><div class="s-name">${esc(g.speaker)}</div><div class="s-sub">${esc(dateText(g.created))}</div></div>
-      <div class="chips">${partChip(g.parts.words, "מילים")}${partChip(g.parts.sentences, "משפטים")}</div>
+      <div class="chips">${partChip(g.parts.words, "מילים")}${partChip(g.parts.sentences, "משפטים")}${g.parts.test.recorded ? partChip(g.parts.test, "הערכה") : ""}</div>
       ${job ? `<div class="s-prog"><div class="track"><div style="width:${pct(job)}%"></div></div></div>` : ""}`;
     row.onclick = () => openGroup(g.name);
     $("gList").appendChild(row);
@@ -675,6 +677,19 @@ function renderGroup() {
     <div class="buttons">
       <button class="${s.recorded ? "ghost" : "primary"}" data-act="rec-sentences" ${ready ? "" : "disabled"}>${s.recorded ? "הקלטה מחדש" : "הקלטה"}</button>
       ${s.recorded && s.complete ? '<button class="ghost" data-act="review-sentences">הצגת התוויות</button>' : ""}
+    </div>`;
+
+  const t = d.parts.test;
+  $("stepTest").className = "box step test" + (t.results ? " done" : "");
+  $("stepTest").innerHTML = `
+    <div class="step-head"><span class="step-num">3</span><h2>מבחן הערכה</h2></div>
+    <div class="status">${t.recorded ? partStatus(t)
+      : "30 משפטים קבועים, שלא משמשים לאימון. הם מודדים את מודל התמלול לפני האימון ואחריו. מספיק להקליט אותם פעם אחת לכל דובר."}</div>
+    ${progressBlock(t.job)}
+    ${t.results ? `<div class="chips">${resultChips(t.results)}</div>` : ""}
+    <div class="buttons">
+      <button class="ghost" data-act="rec-test">${t.recorded ? "הקלטה מחדש" : "הקלטה"}</button>
+      ${t.recorded && t.complete ? '<button class="ghost" data-act="review-test">הצגת התוויות</button>' : ""}
     </div>`;
 
   document.querySelectorAll("#group [data-act]").forEach((b) => { b.onclick = () => groupAction(b.dataset.act); });

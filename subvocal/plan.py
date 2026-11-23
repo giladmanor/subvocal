@@ -24,6 +24,7 @@ from .groups import LIST_FILE, group_dir, list_groups
 from .phonetics import Phonemizer, flatten, split_text
 from .review import RECORDINGS
 from .select import select
+from .testset import test_ids
 
 # A Hebrew letter or a vowel name for each phoneme, for the app screen.
 HEBREW = {
@@ -78,7 +79,8 @@ def make_list(name: str, n: int = 40, keep: bool = False) -> dict:
     rates = error_rates(profile)
     weights = {p: 0.1 + r for p, r in rates.items()}
     sentences = read_tsv(SENTENCES_TSV)
-    done = recorded_before(folder, speaker)
+    # Never select a sentence of the test set, or a sentence of an earlier session.
+    done = recorded_before(folder, speaker) + sorted(test_ids())
     if keep and (folder / LIST_FILE).exists():
         chosen = read_tsv(folder / LIST_FILE)
         n = len(chosen)
@@ -93,7 +95,7 @@ def make_list(name: str, n: int = 40, keep: bool = False) -> dict:
     plain = select(sentences, {p: 1.0 for p in rates}, n, done)
     have, base = counts(chosen), counts(plain)
     return {
-        "name": name, "count": len(chosen), "recorded_before": len(done),
+        "name": name, "count": len(chosen), "recorded_before": len(done) - len(test_ids()),
         "remaining": len(sentences) - len(done),
         "sounds": [{**x, "in_list": have[x["phoneme"]], "in_plain": base[x["phoneme"]]}
                    for x in _sounds(profile, rates)],

@@ -11,6 +11,7 @@ from pathlib import Path
 
 from .corpus import read_tsv
 from .diagnose import normalize, strip_carrier
+from .numbers import canonical
 from .phonetics import REPO_ROOT, Phonemizer, flatten, split_text
 
 RECORDINGS = REPO_ROOT / "data" / "user-recordings"
@@ -48,7 +49,7 @@ def pauses(events: list[dict], rate: int) -> list[dict]:
     return out
 
 
-PARTS = ("words", "sentences")
+PARTS = ("words", "sentences", "test")
 
 
 def session_dir(name: str) -> Path:
@@ -69,7 +70,7 @@ def is_match(item: dict, hyp: str) -> bool:
     if item.get("carrier"):
         words = strip_carrier(hyp).split()
         return len(words) == 1 and words[0] in _accepted(item)
-    return normalize(hyp) == normalize(item["plain"])
+    return canonical(normalize(hyp)) == canonical(normalize(item["plain"]))
 
 
 def has_extra(item: dict, hyp: str) -> bool:

@@ -23,6 +23,7 @@ from collections import Counter
 from pathlib import Path
 
 from .corpus import PROBE_TSV, read_tsv
+from .numbers import canonical
 from .phonetics import PHONEMES, Phonemizer, align, flatten, split_text
 
 CARRIER = {"המילה", "היא", "מילה"}
@@ -87,7 +88,7 @@ def run(refs: list[dict], hyps: dict[str, str], is_probe: bool, ph: Phonemizer) 
         else:
             ref_ph = flatten(split_text(ref["phonemes"]))
             hyp_norm = normalize(hyp_text)
-            ok = hyp_norm == normalize(ref["text"])
+            ok = canonical(hyp_norm) == canonical(normalize(ref["text"]))  # "97" = "תשעים ושבע"
             hyp_ph = ref_ph if ok else flatten(split_text(ph(hyp_norm))) if hyp_norm else []
             foils = []
             skip = 0
