@@ -298,7 +298,10 @@ class App:
                 if s is not None:
                     s.finish()
                     self.session = None
-                self.session = Session(body["group"], body["part"], self.after_transcription)
+                part = body["part"]
+                if part == "more":  # the next batch of sentences
+                    part = groups.new_batch(body["group"], int(settings.load()["plan_sentences"]))
+                self.session = Session(body["group"], part, self.after_transcription)
                 return {"name": self.session.name, "speaker": self.session.speaker, "items": self.session.items}
             if path == "/api/status":
                 if s is None:

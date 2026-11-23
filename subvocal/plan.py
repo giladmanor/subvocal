@@ -54,7 +54,7 @@ def recorded_before(folder: Path, speaker: str) -> list[str]:
     done: list[str] = []
     for g in list_groups():
         if g["speaker"] == speaker and g["name"] != folder.name:
-            done += [w.stem for w in sorted((RECORDINGS / g["name"] / "sentences").glob("*.wav"))]
+            done += [w.stem for w in sorted((RECORDINGS / g["name"]).glob("sentences*/*.wav"))]
     return list(dict.fromkeys(done))
 
 
@@ -71,8 +71,12 @@ def session_sounds(name: str) -> dict:
     return {"name": name, "sounds": _sounds(profile, error_rates(profile))}
 
 
-def make_list(name: str, n: int = 40, keep: bool = False) -> dict:
-    """Select the sentences and write the list. With keep=True, use the list that exists."""
+def make_list(name: str, n: int = 40, keep: bool = False, out: str = LIST_FILE, exclude=()) -> dict:
+    """Select the sentences and write the list to `out` in the session folder.
+
+    With keep=True, use the list that exists. `exclude` has more sentence IDs to skip
+    (for example, the earlier batches of this session).
+    """
     folder = group_dir(name)
     speaker = json.loads((folder / "group.json").read_text())["speaker"]
     profile = word_profile(folder)
@@ -80,13 +84,13 @@ def make_list(name: str, n: int = 40, keep: bool = False) -> dict:
     weights = {p: 0.1 + r for p, r in rates.items()}
     sentences = read_tsv(SENTENCES_TSV)
     # Never select a sentence of the test set, or a sentence of an earlier session.
-    done = recorded_before(folder, speaker) + sorted(test_ids())
-    if keep and (folder / LIST_FILE).exists():
-        chosen = read_tsv(folder / LIST_FILE)
+    done = recorded_before(folder, speaker) + sorted(test_ids()) + list(exclude)
+    if keep and (folder / out).exists():
+        chosen = read_tsv(folder / out)
         n = len(chosen)
     else:
         chosen = select(sentences, weights, n, done, rates)
-        write_tsv(folder / LIST_FILE, chosen, ["id", "section", "text", "niqqud", "phonemes", "gain"])
+        write_tsv(folder / out, chosen, ["id", "section", "text", "niqqud", "phonemes", "gain"])
     (folder / "profile.json").write_text(json.dumps(profile, ensure_ascii=False, indent=1))
 
     # How many times each problem sound occurs in the new list, and in a plain list of the same size.
@@ -95,7 +99,7 @@ def make_list(name: str, n: int = 40, keep: bool = False) -> dict:
     plain = select(sentences, {p: 1.0 for p in rates}, n, done)
     have, base = counts(chosen), counts(plain)
     return {
-        "name": name, "count": len(chosen), "recorded_before": len(done) - len(test_ids()),
+        "name": name, "count": len(chosen), "recorded_before": len(done) - len(test_ids()) - len(exclude),
         "remaining": len(sentences) - len(done),
         "sounds": [{**x, "in_list": have[x["phoneme"]], "in_plain": base[x["phoneme"]]}
                    for x in _sounds(profile, rates)],

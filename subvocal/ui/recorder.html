@@ -93,6 +93,16 @@
   .next-box .label { flex: 1; min-width: 240px; }
   .next-box .label b { display: block; font-size: 18px; margin-bottom: 3px; }
   .next-box .label span { font-size: 14px; color: var(--muted); }
+  .batch { display: flex; justify-content: space-between; gap: 10px; align-items: center; border-top: 1px solid var(--line); padding-top: 10px; font-size: 14px; }
+  .batch .buttons { margin: 0; flex-wrap: nowrap; }
+  .batch .buttons button { font-size: 13px; padding: 6px 10px; }
+  .data-head { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
+  .data-head h2 { margin: 0; }
+  .data-bar { position: relative; height: 14px; border-radius: 7px; background: var(--line); margin: 14px 0 30px; }
+  .data-fill { position: absolute; inset-block: 0; inset-inline-start: 0; border-radius: 7px; background: var(--accent); }
+  .data-tick { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--muted); }
+  .data-tick.ok { background: var(--accent); }
+  .data-tick span { position: absolute; top: 22px; transform: translateX(50%); font-size: 12px; color: var(--muted); white-space: nowrap; }
   .step.next { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent); }
   .lost { position: fixed; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center;
           background: color-mix(in srgb, var(--bg) 92%, transparent); text-align: center; padding: 16px; }
@@ -345,6 +355,7 @@
       <div class="box step" id="stepSentences"></div>
       <div class="box step test" id="stepTest"></div>
     </div>
+    <div class="box" id="gData" style="margin-bottom:14px"></div>
     <div class="box sounds" id="gSounds" style="display:none"></div>
   </div>
 </section>
@@ -659,10 +670,12 @@ async function openHome() {
   for (const g of groups) {
     const row = document.createElement("div");
     row.className = "s-row";
-    const job = Object.values(g.parts).map((p) => p.job).find(jobRunning);
+    const job = [...Object.values(g.parts), ...g.batches].map((p) => p.job).find(jobRunning);
     row.innerHTML = `
       <div><div class="s-name">${esc(g.speaker)}</div><div class="s-sub">${esc(dateText(g.created))}</div></div>
-      <div class="chips">${partChip(g.parts.words, "מילים")}${partChip(g.parts.sentences, "משפטים")}${g.parts.test.recorded ? partChip(g.parts.test, "הערכה") : ""}</div>
+      <div class="chips">${partChip(g.parts.words, "מילים")}${g.batches.length > 1
+          ? `<span class="chip ok">משפטים: ${g.batches.reduce((n, b) => n + (b.saved || 0), 0)} ב-${g.batches.length} הקלטות</span>`
+          : partChip(g.parts.sentences, "משפטים")}${g.parts.test.recorded ? partChip(g.parts.test, "הערכה") : ""}</div>
       ${job ? `<div class="s-prog"><div class="track"><div style="width:${pct(job)}%"></div></div></div>` : ""}`;
     row.onclick = () => openGroup(g.name);
     $("gList").appendChild(row);
@@ -724,7 +737,30 @@ function nextStep(d) {
     : {wait: true, title: "האפליקציה בוחרת את המשפטים", text: ""};
   if (!t.recorded && !d.test_elsewhere) return {part: "test", title: "הקלטת מבחן ההערכה",
     text: "30 משפטים קבועים שלא משמשים לאימון. הם מודדים את המודל לפני האימון ואחריו. פעם אחת לכל דובר."};
-  return {done: true, title: "הסשן הושלם", text: t.recorded || d.test_elsewhere ? "אפשר לעבור לאימון המודל, או להתחיל סשן חדש." : ""};
+  const first = d.training_data.targets[0];
+  if (!first.reached && d.training_data.pool_left > 0) return {part: "more", title: "הקלטת עוד משפטים",
+    text: `עוד כ-${first.sentences} משפטים עד ${first.minutes} דקות של נתוני אימון.`};
+  return {done: true, title: "הסשן הושלם", text: "אפשר לעבור לאימון המודל."};
+}
+
+// How much sentence data the speaker has, against the targets of 15, 30, and 60 minutes.
+function renderData(td) {
+  const max = 60, at = (m) => `${Math.min(100, (m / max) * 100)}%`;
+  const next = td.targets.find((t) => !t.reached);
+  const lines = [];
+  if (!next) lines.push("הדובר הגיע ל-60 דקות של משפטים.");
+  else {
+    lines.push(`עד ${next.minutes} דקות: עוד כ-<b>${next.sentences}</b> משפטים (כ-${Math.ceil(next.sentences * td.avg_seconds / 60)} דקות קריאה, בקצב של ${td.avg_seconds} שניות למשפט).`);
+    if (!next.possible) lines.push(`<span class="warn-line">במאגר נשארו רק ${td.pool_left} משפטים (כ-${td.pool_minutes} דקות). כדי להגיע ל-${next.minutes} דקות צריך להוסיף משפטים למאגר.</span>`);
+  }
+  const later = td.targets.filter((t) => !t.reached && t !== next && !t.possible);
+  if (next?.possible && later.length) lines.push(`<span class="muted">במאגר נשארו ${td.pool_left} משפטים (כ-${td.pool_minutes} דקות). זה מספיק ל-${next.minutes} דקות, אבל לא ל-${later.map((t) => t.minutes).join(" ול-")} דקות.</span>`);
+  return `
+    <div class="data-head"><h2>נתוני האימון של הדובר</h2><span class="chip ${next ? "" : "ok"}"><b>${td.minutes}</b> דקות · ${td.clips} משפטים</span></div>
+    <div class="data-bar"><div class="data-fill" style="width:${at(td.minutes)}"></div>
+      ${td.targets.map((t) => `<div class="data-tick ${t.reached ? "ok" : ""}" style="inset-inline-start:${at(t.minutes)}"><span>${t.minutes} דק׳</span></div>`).join("")}</div>
+    <div class="status">${lines.join("<br>")}</div>
+    <p class="note">הספירה כוללת את המשפטים מכל הסשנים של הדובר, בלי מבחן ההערכה. 15 דקות הן היעד הראשון לאימון, אחריהן 30 ו-60.</p>`;
 }
 
 function renderGroup() {
@@ -732,8 +768,9 @@ function renderGroup() {
   const next = nextStep(d);
   $("gNext").style.display = "";
   $("gNext").innerHTML = `<div class="label"><b>${next.done ? "✓ " : "השלב הבא: "}${esc(next.title)}</b><span>${esc(next.text)}</span></div>
-    ${next.part ? `<button class="primary" data-act="rec-${next.part}">${esc(next.title)}</button>` : ""}
-    ${next.done ? '<button class="ghost" data-act="go-pipeline">אימון מודל ←</button>' : ""}`;
+    ${next.part ? `<button class="primary" data-act="rec" data-part="${next.part}">${esc(next.title)}</button>` : ""}
+    ${next.done ? '<button class="ghost" data-act="pipeline">אימון מודל ←</button>' : ""}`;
+  $("gData").innerHTML = renderData(d.training_data);
   $("gTitle").textContent = d.speaker;
   $("gDate").textContent = dateText(d.created);
 
@@ -744,23 +781,34 @@ function renderGroup() {
     ${progressBlock(w.job)}
     ${w.results ? `<div class="chips">${resultChips(w.results)}</div>` : ""}
     <div class="buttons">
-      <button class="${w.recorded ? "ghost" : "primary"}" data-act="rec-words">${w.recorded ? "הקלטה מחדש" : "הקלטה"}</button>
-      ${w.recorded && w.complete ? '<button class="ghost" data-act="review-words">הצגת התוויות</button>' : ""}
+      <button class="${w.recorded ? "ghost" : "primary"}" data-act="rec" data-part="words">${w.recorded ? "הקלטה מחדש" : "הקלטה"}</button>
+      ${w.recorded && w.complete ? '<button class="ghost" data-act="review" data-part="words">הצגת התוויות</button>' : ""}
     </div>`;
 
-  const ready = d.list_ready;
-  $("stepSentences").className = "box step" + (s.results ? " done" : "") + (w.results ? "" : " off") + (next.part === "sentences" ? " next" : "");
+  const ready = d.list_ready, bs = d.batches;
+  const total = bs.reduce((n, b) => n + (b.saved || 0), 0);
+  const batchRows = bs.map((b) => `
+    <div class="batch">
+      <div><b>הקלטה ${b.index}</b> · ${b.saved} משפטים · ${esc(dateText(b.started))}
+        ${b.results ? `<div class="chips" style="margin-top:4px">${resultChips(b.results)}</div>` : ""}
+        ${progressBlock(b.job)}</div>
+      <div class="buttons">
+        ${b.complete ? `<button class="ghost" data-act="review" data-part="${b.part}">תוויות</button>` : ""}
+        <button class="ghost" data-act="rec" data-part="${b.part}">מחדש</button>
+      </div>
+    </div>`).join("");
+  $("stepSentences").className = "box step" + (bs.length ? " done" : "") + (w.results ? "" : " off")
+    + (next.part === "sentences" || next.part === "more" ? " next" : "");
   $("stepSentences").innerHTML = `
     <div class="step-head"><span class="step-num">2</span><h2>משפטים</h2></div>
-    <div class="status">${s.recorded ? partStatus(s)
+    <div class="status">${bs.length ? `${total} משפטים ב-${bs.length} הקלטות`
       : !w.results ? "המשפטים ייבחרו לפי התוצאות של מבחן המילים."
       : ready ? `${d.list_count} משפטים נבחרו, עם יותר מופעים של הצלילים הקשים.`
       : '<span id="listWait"></span>'}</div>
-    ${progressBlock(s.job)}
-    ${s.results ? `<div class="chips">${resultChips(s.results)}</div>` : ""}
+    ${batchRows}
     <div class="buttons">
-      <button class="${s.recorded ? "ghost" : "primary"}" data-act="rec-sentences" ${ready ? "" : "disabled"}>${s.recorded ? "הקלטה מחדש" : "הקלטה"}</button>
-      ${s.recorded && s.complete ? '<button class="ghost" data-act="review-sentences">הצגת התוויות</button>' : ""}
+      ${bs.length ? `<button class="${next.part === "more" ? "primary" : "ghost"}" data-act="rec" data-part="more" ${d.training_data.pool_left > 0 ? "" : "disabled"}>הקלטת עוד משפטים</button>`
+        : `<button class="primary" data-act="rec" data-part="sentences" ${ready ? "" : "disabled"}>הקלטה</button>`}
     </div>`;
 
   const t = d.parts.test;
@@ -773,11 +821,11 @@ function renderGroup() {
     ${progressBlock(t.job)}
     ${t.results ? `<div class="chips">${resultChips(t.results)}</div>` : ""}
     <div class="buttons">
-      <button class="${next.part === "test" ? "primary" : "ghost"}" data-act="rec-test">${t.recorded ? "הקלטה מחדש" : "הקלטה"}</button>
-      ${t.recorded && t.complete ? '<button class="ghost" data-act="review-test">הצגת התוויות</button>' : ""}
+      <button class="${next.part === "test" ? "primary" : "ghost"}" data-act="rec" data-part="test">${t.recorded ? "הקלטה מחדש" : "הקלטה"}</button>
+      ${t.recorded && t.complete ? '<button class="ghost" data-act="review" data-part="test">הצגת התוויות</button>' : ""}
     </div>`;
 
-  document.querySelectorAll("#group [data-act]").forEach((b) => { b.onclick = () => groupAction(b.dataset.act); });
+  document.querySelectorAll("#group [data-act]").forEach((b) => { b.onclick = () => groupAction(b.dataset.act, b.dataset.part); });
   // The sounds: after the word test is transcribed. Load them again only if the word test changed.
   const key = w.results ? `${d.name}|${w.started}|${w.results.total}` : "";
   if (key && key !== G.soundsKey) { G.soundsKey = key; loadSounds(d.name); }
@@ -835,15 +883,17 @@ function confirmBox(title, text, yes) {
   });
 }
 
-async function groupAction(act) {
-  const [verb, part] = act.split("-");
+async function groupAction(act, part) {
   const d = G.data;
-  if (act === "go-pipeline") { openPipeline(d.speaker); return; }
-  if (verb === "review") { openReview(`${d.name}/${part}`); return; }
-  if (d.parts[part].recorded) {
+  if (act === "pipeline") { openPipeline(d.speaker); return; }
+  if (act === "review") { openReview(`${d.name}/${part}`); return; }
+  const batch = d.batches.find((b) => b.part === part);
+  if (d.parts[part]?.recorded || batch) {
+    const what = batch ? `הקלטת המשפטים ${batch.index}` : `ה${PART_NAME[part]}`;
     const text = "ההקלטה הקודמת תעבור לתיקייה _old בתוך הסשן. היא לא תימחק."
-      + (part === "words" ? " גם רשימת המשפטים תיבחר מחדש לפי המבחן החדש." : "");
-    if (!await confirmBox(`להקליט מחדש את ה${PART_NAME[part]}?`, text, "הקלטה מחדש")) return;
+      + (batch ? " ההקלטה החדשה תשתמש באותה רשימת משפטים." : "")
+      + (part === "words" ? " גם רשימות המשפטים ייבחרו מחדש לפי המבחן החדש. הקלטות המשפטים שכבר נעשו נשארות." : "");
+    if (!await confirmBox(`להקליט מחדש את ${what}?`, text, "הקלטה מחדש")) return;
   }
   try { await startRecording(d.name, part); }
   catch (e) { $("gDate").textContent = "שגיאה: " + e.message; }
@@ -855,7 +905,8 @@ async function openReview(name) {
   show("review");
   R.data = null; R.buffer = null; R.peaks = null; R.sel = -1;
   const [gname, part] = name.split("/");
-  $("rTitle").textContent = `${PART_NAME[part] || part} · ${gname}`;
+  const label = PART_NAME[part] || (part.startsWith("sentences-") ? `משפטים, הקלטה ${part.split("-")[1]}` : part);
+  $("rTitle").textContent = `${label} · ${gname}`;
   location.hash = "review/" + name;
   $("rBody").innerHTML = '<tr><td colspan="8" class="empty">טוען…</td></tr>';
   R.data = await api(`/api/session/${encodeURIComponent(name)}`);
@@ -1230,7 +1281,7 @@ async function pollJobs() {
       const [gname, part] = name.split("/");
       $("jobText").innerHTML = (j.state === "error" ? `שגיאה בתמלול: ${esc(j.error)}`
         : j.done === 0 ? "מתמלל… (טעינת המודל)" : `מתמלל: ${j.done} מתוך ${j.total}`)
-        + ` · ${PART_NAME[part] || ""} · <bdi>${esc(gname)}</bdi>`;
+        + ` · ${PART_NAME[part] || (part?.startsWith("sentences-") ? "משפטים" : "")} · <bdi>${esc(gname)}</bdi>`;
     }
     $("jobTrack").classList.toggle("wait", j.done === 0 && j.state !== "error");
     $("jobFill").style.width = pct(j) + "%";

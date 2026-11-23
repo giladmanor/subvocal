@@ -60,9 +60,11 @@ def collect(speaker: str, with_words: bool = False) -> dict:
     for g in list_groups():
         if g["speaker"] != speaker:
             continue
-        for part in ("sentences", "test", "words"):
-            folder = RECORDINGS / g["name"] / part
-            if not (folder / "prompts.tsv").exists():
+        session = RECORDINGS / g["name"]
+        parts = ["test", "words"] + [p.name for p in sorted(session.glob("sentences*")) if p.is_dir()]
+        for part in parts:
+            folder = session / part
+            if not (folder / "prompts.tsv").exists() or not (folder / "session.json").exists():
                 continue
             meta = json.loads((folder / "session.json").read_text())
             plain = {it["id"]: it.get("plain", it["text"]) for it in meta["items"]}  # old sessions: no "plain"
@@ -75,7 +77,7 @@ def collect(speaker: str, with_words: bool = False) -> dict:
                     continue
                 if part == "test" or wav.stem in tests:
                     test.append(ex)
-                elif part == "sentences" or (part == "words" and with_words):
+                elif part.startswith("sentences") or (part == "words" and with_words):
                     train.append(ex)
     return {"train": train, "test": test}
 

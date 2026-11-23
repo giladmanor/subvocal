@@ -70,6 +70,15 @@ After a recording, the app shows the session card. The card shows:
 
 When the word test is transcribed, the app makes the sentence list. Then the sentence part starts.
 
+To add sentences to a session, click **הקלטת עוד משפטים**. The app selects the next batch from the
+word test of the session. The batch skips the sentences that the speaker recorded in any session,
+and the test set. Each batch is a new recording (`sentences-2/`, `sentences-3/`, ...).
+
+The session card also shows the training data of the speaker: the minutes of sentences from all
+sessions, against the targets of 15, 30, and 60 minutes, and about how many more sentences are
+necessary. The sentence pool has 270 sentences outside the test set (about 19 minutes at 4 seconds
+for each sentence). It is enough for 15 minutes, but not for 30 or 60 minutes.
+
 > **Note:** When you record a part again, the app moves the earlier recording to `_old/` in the
 > session folder. It does not delete it. A new word test also makes a new sentence list.
 

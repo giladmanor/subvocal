@@ -7,6 +7,7 @@ See subvocal/record.py.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from .corpus import read_tsv
@@ -50,13 +51,14 @@ def pauses(events: list[dict], rate: int) -> list[dict]:
 
 
 PARTS = ("words", "sentences", "test")
+PART_RE = re.compile(r"^(words|test|sentences(-[2-9]|-[1-9][0-9])?)$")  # "sentences-2": the second batch
 
 
 def session_dir(name: str) -> Path:
     """The folder of a recording. The name is "<session>/<part>", for example "dana-2026-11-23-092316/words"."""
     group, _, part = name.partition("/")
     folder = (RECORDINGS / group / part).resolve()
-    if part not in PARTS or folder.parent.parent != RECORDINGS.resolve() or not folder.is_dir():
+    if not PART_RE.match(part) or folder.parent.parent != RECORDINGS.resolve() or not folder.is_dir():
         raise ValueError(f"no recording: {name}")
     return folder
 
