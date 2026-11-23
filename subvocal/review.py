@@ -143,7 +143,7 @@ def start_transcription(name: str) -> dict:
     JOBS[name] = job
 
     def run():
-        cmd = [sys.executable, "-m", "subvocal.transcribe", "--audio", str(folder), "--out", str(folder / "hyp.tsv")]
+        cmd = [sys.executable, "-u", "-m", "subvocal.transcribe", "--audio", str(folder), "--out", str(folder / "hyp.tsv")]
         proc = subprocess.Popen(cmd, cwd=REPO_ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         tail = []
         for line in proc.stdout:
