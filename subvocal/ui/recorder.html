@@ -1314,6 +1314,7 @@ function renderPipeline() {
         ${data.test_from_test_part ? "" : " מקליטים אותם בחלק 3 של סשן (מבחן הערכה)."}</td>
         <td>${data.test_clips}${data.test_from_test_part ? "" : ` <span class="muted">(${data.test_clips ? "מתוך חלק המשפטים" : "לא הוקלט"})</span>`}</td><td>${data.test_minutes}</td></tr>
     </tbody></table>
+    ${data.silent?.length ? `<div class="warn-line">${data.silent.length} הקלטות כמעט שקטות (כרטיס שדולג) לא נכנסות לאימון ולמדידה: ${esc(data.silent.join(", "))}. אפשר להקליט אותן מחדש.</div>` : ""}
     ${notes.map((n) => `<div class="warn-line">${esc(n)}</div>`).join("")}
     <h2 style="font-size:16px;margin-top:6px">אימון (LoRA)</h2>
     <div class="form">

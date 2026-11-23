@@ -44,6 +44,9 @@ from .review import RECORDINGS
 from .testset import test_ids
 
 
+SILENCE = 0.02  # peak level (full scale = 1). A clip below it has no speech.
+
+
 def progress(stage: str, done: int = 0, total: int = 0, **extra) -> None:
     print("@@" + json.dumps({"stage": stage, "done": done, "total": total, **extra}, ensure_ascii=False), flush=True)
 
@@ -53,10 +56,11 @@ def progress(stage: str, done: int = 0, total: int = 0, **extra) -> None:
 
 def collect(speaker: str, with_words: bool = False) -> dict:
     """The examples of the speaker: {"train": [...], "test": [...]}. Each example: id, path, text, part."""
+    import numpy as np
     import soundfile as sf
 
     tests = test_ids()
-    train, test = [], []
+    train, test, silent = [], [], []
     for g in list_groups():
         if g["speaker"] != speaker:
             continue
@@ -68,26 +72,37 @@ def collect(speaker: str, with_words: bool = False) -> dict:
                 continue
             meta = json.loads((folder / "session.json").read_text())
             plain = {it["id"]: it.get("plain", it["text"]) for it in meta["items"]}  # old sessions: no "plain"
-            texts = {it["id"]: (f"{CARRIER_TEXT} {plain[it['id']]}" if it.get("carrier") else plain[it["id"]])
-                     for it in meta["items"]}
+            # A word clip gets the carrier phrase in its label only if the speaker said it.
+            # The base transcript shows it: some speakers read the word alone.
+            hyp = {r["id"]: normalize(r["text"]) for r in read_tsv(folder / "hyp.tsv")} if (folder / "hyp.tsv").exists() else {}
+            said_carrier = lambda i: CARRIER_TEXT.split()[0] in hyp.get(i, CARRIER_TEXT)  # noqa: E731
+            texts = {it["id"]: (f"{CARRIER_TEXT} {plain[it['id']]}" if it.get("carrier") and said_carrier(it["id"])
+                                else plain[it["id"]]) for it in meta["items"]}
             for wav in sorted(folder.glob("*.wav")):
                 ex = {"id": wav.stem, "path": str(wav), "text": texts.get(wav.stem, ""), "part": part,
                       "session": g["name"], "seconds": sf.info(wav).duration}
                 if not ex["text"]:
                     continue
+                if np.abs(sf.read(wav, dtype="float32")[0]).max() < SILENCE:  # a skipped card
+                    silent.append(ex)
+                    continue
                 if part == "test" or wav.stem in tests:
                     test.append(ex)
                 elif part.startswith("sentences") or (part == "words" and with_words):
                     train.append(ex)
-    return {"train": train, "test": test}
+    return {"train": train, "test": test, "silent": silent}
 
 
 def split_validation(train: list[dict], share: float = 0.10) -> tuple[list[dict], list[dict]]:
-    """A fixed split by the sentence ID. All the takes of a sentence go to the same side."""
-    if len(train) < 10:
+    """A fixed split by the sentence ID. All the takes of a sentence go to the same side.
+
+    The validation set has only sentences. The word clips are short and alike, so they
+    do not measure the model well.
+    """
+    if sum(1 for ex in train if ex["part"] != "words") < 10:
         return train, []
     key = lambda ex: int(hashlib.sha1(ex["id"].encode()).hexdigest(), 16) % 1000  # noqa: E731
-    val = [ex for ex in train if key(ex) < share * 1000]
+    val = [ex for ex in train if ex["part"] != "words" and key(ex) < share * 1000]
     return [ex for ex in train if ex not in val], val
 
 
@@ -100,7 +115,8 @@ def summary(speaker: str, with_words: bool = False) -> dict:
             "train_words": sum(1 for x in train if x["part"] == "words"),
             "val_clips": len(val), "val_minutes": minutes(val),
             "test_clips": len(data["test"]), "test_minutes": minutes(data["test"]),
-            "test_from_test_part": sum(1 for x in data["test"] if x["part"] == "test")}
+            "test_from_test_part": sum(1 for x in data["test"] if x["part"] == "test"),
+            "silent": [f"{x['session']}/{x['part']}/{x['id']}" for x in data["silent"]]}
 
 
 # ---------------------------------------------------------------- measurement
@@ -256,6 +272,7 @@ def train(speaker: str, epochs: int, lr: float, rank: int, batch: int, with_word
     info["best_epoch"] = min(history, key=lambda h: h["val_loss"] if h["val_loss"] is not None
                              else h["train_loss"])["epoch"]
     set_peft_model_state_dict(model, best_state)
+    (run / "run.json").write_text(json.dumps(info, ensure_ascii=False, indent=1))  # keep the history if a later step fails
 
     progress("convert", 0, 1, message="merging and converting to CTranslate2")
     model.save_pretrained(run / "adapter")
@@ -267,14 +284,26 @@ def train(speaker: str, epochs: int, lr: float, rank: int, batch: int, with_word
 
     copy = [f for f in ("tokenizer.json", "preprocessor_config.json") if (hf_dir / f).exists()]
     TransformersConverter(str(hf_dir), copy_files=copy).convert(str(run / "ct2"), quantization="int8")
+    # faster-whisper reads the number of mel bands (128 for large-v3) from this file.
+    # Without it, it uses 80, and the model fails.
+    proc.feature_extractor.to_json_file(str(run / "ct2" / "preprocessor_config.json"))
     shutil.rmtree(hf_dir)  # 1.6 GB. The adapter and the CTranslate2 model are enough.
     del model, merged
     progress("convert", 1, 1)
 
+    return measure(run)
+
+
+def measure(run: Path) -> Path:
+    """Transcribe the test set and the validation set with the base model and the new model."""
+    info = json.loads((run / "run.json").read_text())
+    data = collect(info["speaker"], info["params"]["with_words"])
+    _, val_set = split_validation(data["train"])
+    base_ct2 = next(b["ct2"] for b in settings.BASES.values() if b["label"] == info["base"])
     info["eval"] = {
-        "test": {"base": evaluate(base["ct2"], data["test"], "base:test"),
+        "test": {"base": evaluate(base_ct2, data["test"], "base:test"),
                  "tuned": evaluate(str(run / "ct2"), data["test"], "tuned:test")},
-        "val": {"base": evaluate(base["ct2"], val_set, "base:val"),
+        "val": {"base": evaluate(base_ct2, val_set, "base:val"),
                 "tuned": evaluate(str(run / "ct2"), val_set, "tuned:val")},
     }
     info["state"] = "done"
@@ -287,13 +316,24 @@ def main() -> None:
     cfg = settings.load()["train"]
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--speaker", required=True)
+    ap.add_argument("--evaluate", metavar="RUN", help="only measure an existing run (data/models/<speaker>/<RUN>)")
     ap.add_argument("--epochs", type=int, default=cfg["epochs"])
     ap.add_argument("--lr", type=float, default=cfg["lr"])
     ap.add_argument("--rank", type=int, default=cfg["rank"])
     ap.add_argument("--batch", type=int, default=cfg["batch"])
     ap.add_argument("--with-words", action="store_true", default=cfg["with_words"])
     a = ap.parse_args()
-    run = train(a.speaker, a.epochs, a.lr, a.rank, a.batch, a.with_words)
+    if a.evaluate:
+        run = settings.MODELS / a.speaker / a.evaluate
+        ct2 = run / "ct2"
+        if not (ct2 / "preprocessor_config.json").exists():  # runs from before the fix
+            from transformers import WhisperFeatureExtractor
+            base_hf = next(b["hf"] for b in settings.BASES.values()
+                           if b["label"] == json.loads((run / "run.json").read_text())["base"])
+            WhisperFeatureExtractor.from_pretrained(base_hf).to_json_file(str(ct2 / "preprocessor_config.json"))
+        run = measure(run)
+    else:
+        run = train(a.speaker, a.epochs, a.lr, a.rank, a.batch, a.with_words)
     info = json.loads((run / "run.json").read_text())
     for split, r in info["eval"].items():
         b, t = r["base"], r["tuned"]
