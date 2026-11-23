@@ -268,7 +268,10 @@ class App:
                 return {"ok": True}
             if path in ("/api/finish", "/api/bye"):  # "bye": the window closed during a session
                 self.session = None
-                return s.finish()
+                result = s.finish()
+                if path == "/api/finish":  # not on "bye": the server stops soon after
+                    result["transcribe"] = review.start_transcription(result["name"])
+                return result
         return {"error": "unknown path"}
 
 

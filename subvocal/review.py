@@ -14,7 +14,7 @@ from pathlib import Path
 
 from .corpus import read_tsv
 from .diagnose import normalize, strip_carrier
-from .phonetics import REPO_ROOT
+from .phonetics import REPO_ROOT, Phonemizer, flatten, split_text
 
 RECORDINGS = REPO_ROOT / "data" / "user-recordings"
 MIN_TAKE = 0.25  # seconds. A shorter take means the speaker only passed over the card.
@@ -84,6 +84,23 @@ def is_match(item: dict, hyp: str) -> bool:
     return normalize(hyp) == normalize(item["plain"])
 
 
+_PHONEMIZER: Phonemizer | None = None
+
+
+def same_sound(ref_phonemes: str, hyp: str, probe: bool) -> bool:
+    """True if the transcript has the same phonemes as the reference, with a different spelling.
+
+    Examples: "פאט" for "פת", "קול" for "כל". Stress marks do not count.
+    """
+    global _PHONEMIZER
+    text = strip_carrier(hyp) if probe else normalize(hyp)
+    if not text or not ref_phonemes:
+        return False
+    _PHONEMIZER = _PHONEMIZER or Phonemizer()
+    ref = ref_phonemes.split() if probe else flatten(split_text(ref_phonemes))
+    return flatten(split_text(_PHONEMIZER(text))) == ref
+
+
 def load_session(name: str) -> dict:
     folder = session_dir(name)
     meta = json.loads((folder / "session.json").read_text())
@@ -95,7 +112,14 @@ def load_session(name: str) -> dict:
         it.setdefault("plain", it["text"])
     hyp = {r["id"]: r["text"] for r in read_tsv(folder / "hyp.tsv")} if (folder / "hyp.tsv").exists() else {}
     by_id = {it["id"]: it for it in items}
-    results = {i: {"hyp": h, "match": is_match(by_id[i], h)} for i, h in hyp.items() if i in by_id}
+    prompts = {r["id"]: r for r in read_tsv(folder / "prompts.tsv")} if (folder / "prompts.tsv").exists() else {}
+    results = {}
+    for i, h in hyp.items():
+        if i not in by_id:
+            continue
+        match = is_match(by_id[i], h)
+        sound = not match and same_sound(prompts.get(i, {}).get("phonemes", ""), h, bool(by_id[i].get("carrier")))
+        results[i] = {"hyp": h, "match": match, "same_sound": sound}
     return {
         "name": name, "meta": {k: v for k, v in meta.items() if k != "items"}, "items": items,
         "duration": end_frame / rate, "takes": compute_takes(events, end_frame, rate),

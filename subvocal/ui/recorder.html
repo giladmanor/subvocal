@@ -322,6 +322,7 @@
     <span><i style="background:var(--accent);opacity:.35"></i>כרטיס שנשמר</span>
     <span><i style="background:var(--muted);opacity:.25"></i>קריאה קודמת (לא נשמרה)</span>
     <span><i style="background:var(--rec);opacity:.18"></i>הפסקה</span>
+    <span><b class="mark-ok">≈</b> אותו צליל, כתיב אחר</span>
     <span>לחיצה על הגל: השמעה מהנקודה · לחיצה על שורה: השמעת הכרטיס · <kbd>רווח</kbd> השמעה / עצירה · <kbd>↑</kbd><kbd>↓</kbd> מעבר</span>
   </div>
   <div class="r-table-wrap">
@@ -577,6 +578,7 @@ function renderReview() {
   d.takes.forEach((t) => { if (!t.short) count[t.id] = (count[t.id] || 0) + 1; });
   const res = d.results;
   const nRes = Object.keys(res).length, nOk = Object.values(res).filter((r) => r.match).length;
+  const nSound = Object.values(res).filter((r) => r.same_sound).length;
   const clock = d.meta.clock;
   const pills = [
     `${Object.keys(kept).length} / ${d.items.length} כרטיסים נשמרו`,
@@ -584,7 +586,7 @@ function renderReview() {
     `דובר: ${esc(d.meta.speaker)}`,
     `קצב דגימה ${d.meta.rate} Hz`,
   ];
-  if (nRes) pills.push(`<b>${nOk} / ${nRes}</b> תומללו נכון`);
+  if (nRes) pills.push(`<b>${nOk} / ${nRes}</b> תומללו נכון` + (nSound ? ` · ${nSound} באותו צליל (≈)` : ""));
   if (clock) pills.push(`שעון: ${(clock.ratio * 100).toFixed(1)}% · ${clock.overflows} אובדנים`);
   else pills.push("בדיקת שעון: לא קיימת (הקלטה ישנה)");
   $("rStats").innerHTML = pills.map((p) => `<span class="pill">${p}</span>`).join("");
@@ -593,7 +595,9 @@ function renderReview() {
   R.rows = d.items.map((it) => ({it, take: kept[it.id], res: res[it.id], n: count[it.id] || 0}));
   $("rBody").innerHTML = R.rows.map((r, i) => {
     const t = r.take;
-    const mark = r.res ? (r.res.match ? '<span class="mark-ok">✓</span>' : '<span class="mark-bad">✗</span>') : "";
+    const mark = !r.res ? "" : r.res.match ? '<span class="mark-ok">✓</span>'
+      : r.res.same_sound ? '<span class="mark-ok" title="אותו צליל, כתיב אחר">≈</span>'
+      : '<span class="mark-bad">✗</span>';
     return `<tr data-i="${i}" class="${t ? "" : "missing"}">
       <td class="r-id">${esc(r.it.id)}</td>
       <td class="r-text">${r.it.carrier ? `<span style="color:var(--muted);font-size:14px">${esc(r.it.carrier)}</span> ` : ""}${esc(r.it.text)}</td>
