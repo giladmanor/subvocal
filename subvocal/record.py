@@ -261,6 +261,25 @@ class App:
             (folder / groups.LIST_FILE).unlink(missing_ok=True)
             self.plan(group)
 
+    def trial(self, action: str, body: dict) -> dict:
+        """The try-out screen: hold to talk, then correct and speak (subvocal/trial.py)."""
+        from .trial import TRIAL, llm_credentials
+
+        if action == "start":
+            if self.session is not None:
+                raise ValueError("a recording session uses the microphone")
+            return TRIAL.start(groups.safe_name(body.get("speaker", "")))
+        if action == "stop":
+            return TRIAL.stop()
+        if action == "reset":
+            return TRIAL.reset()
+        if action == "info":
+            speaker = groups.safe_name(body.get("speaker", ""))
+            TRIAL.warm(speaker)
+            return {"model": TRIAL.model_path(speaker)[1], "llm_credentials": llm_credentials(),
+                    "speakers": groups.speakers(), "settings": settings.load()}
+        return TRIAL.status()
+
     def handle(self, path: str, body: dict) -> dict:
         if path != "/api/bye":
             self.cancel_stop()
@@ -287,6 +306,8 @@ class App:
             return pipeline.set_active(groups.safe_name(body["speaker"]), body.get("run", ""))
         if path == "/api/pipeline/say":
             return pipeline.say_sample(str(body.get("text", ""))[:300])
+        if path.startswith("/api/try/"):
+            return self.trial(path.removeprefix("/api/try/"), body)
         if path == "/api/sounds":
             from .plan import session_sounds
             return session_sounds(body["name"])

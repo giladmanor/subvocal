@@ -17,15 +17,15 @@ BASES = {
     "large-v3": {"label": "ivrit-ai/whisper-large-v3", "hf": "ivrit-ai/whisper-large-v3",
                  "ct2": "ivrit-ai/whisper-large-v3-ct2"},
 }
-LLM_MODELS = ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"]
+LLM_MODELS = ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"]
 
 DEFAULTS = {
     "plan_sentences": 40,
     "asr": {"base": "turbo"},
     "train": {"epochs": 5, "lr": 0.0005, "rank": 32, "batch": 4, "with_words": False},
     "active": {},  # speaker -> the name of the training run that the speaker uses ("" = the base model)
-    "llm": {"enabled": False, "model": "claude-haiku-5-5"},
-    "tts": {"voice": "Carmit", "rate": 180},
+    "llm": {"enabled": True, "model": "claude-opus-5-5"},
+    "tts": {"voice": "Carmit", "rate": 180, "speak": True},
 }
 
 LIMITS = {

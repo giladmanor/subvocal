@@ -17,6 +17,7 @@ import threading
 from . import review, settings
 from .groups import list_groups
 from .phonetics import REPO_ROOT
+from .trial import llm_credentials
 
 
 def runs(speaker: str) -> list[dict]:
@@ -66,6 +67,7 @@ def status(speaker: str | None) -> dict:
                 "data": summary(speaker, cfg["train"]["with_words"]) if speaker else {},
                 "job": review.JOBS.get(f"train:{speaker}", {})},
         "tts": {"engine": "macOS say", "os": f"macOS {platform.mac_ver()[0]}", "voices": voices()},
+        "llm_credentials": llm_credentials(),
     }
 
 

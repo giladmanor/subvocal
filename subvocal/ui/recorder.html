@@ -191,6 +191,29 @@
   .text { line-height: 1.3; }
   .card.sentence .text { line-height: 1.55; }
 
+  /* ---------- trial ---------- */
+  #trial { overflow: auto; }
+  .t-box { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; margin-top: 10px; }
+  .t-info { font-size: 13px; color: var(--muted); }
+  .t-opts { justify-content: center; }
+  .talk { width: 190px; height: 190px; border-radius: 50%; background: var(--accent); color: var(--accent-ink);
+          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-size: 18px;
+          box-shadow: var(--shadow); touch-action: none; }
+  .talk-dot { width: 18px; height: 18px; border-radius: 50%; background: var(--accent-ink); opacity: .5; }
+  .talk.on { background: var(--rec); transform: scale(1.06); }
+  .talk.on .talk-dot { animation: pulse 1s infinite; opacity: 1; }
+  .talk:disabled { opacity: .5; }
+  .t-hint { font-size: 12px; color: var(--muted); }
+  .t-live { font-size: clamp(24px, 3vw, 38px); font-weight: 600; min-height: 1.4em; line-height: 1.4; }
+  .t-state { font-size: 14px; color: var(--muted); min-height: 1.3em; }
+  .t-turns { display: grid; gap: 10px; margin-top: 16px; }
+  .turn { padding: 14px 18px; }
+  .turn .final { font-size: 22px; font-weight: 600; }
+  .turn .raw { font-size: 14px; color: var(--muted); margin-top: 4px; }
+  .turn ins { text-decoration: none; background: color-mix(in srgb, var(--accent) 25%, transparent); border-radius: 4px; padding: 0 3px; }
+  .turn del { color: var(--rec); }
+  .turn .meta { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
   /* ---------- pipeline ---------- */
   #pipeline { overflow: auto; }
   .flow { display: flex; flex-direction: column; gap: 0; margin-top: 18px; }
@@ -301,6 +324,7 @@
     <div class="page-head">
       <div><div class="brand">Subvocal</div><h1>סשנים</h1></div>
       <div>
+        <button class="primary" id="trialBtn">ניסוי ←</button>
         <button class="ghost" id="pipelineBtn">אימון מודל ←</button>
         <button class="link" id="settingsBtn">⚙ הגדרות</button>
       </div>
@@ -317,6 +341,32 @@
       <div class="error" id="homeError"></div>
     </div>
     <div class="s-list" id="gList"></div>
+  </div>
+</section>
+
+<!-- ============ trial: hold to talk ============ -->
+<section id="trial" class="screen">
+  <div class="page">
+    <div class="page-head">
+      <div><div class="brand">Subvocal</div><h1>ניסוי</h1></div>
+      <div class="form">
+        <div class="field"><label for="tSpeaker">דובר</label><select id="tSpeaker"></select></div>
+        <button class="ghost" id="trialBackBtn">→ סשנים</button>
+      </div>
+    </div>
+    <div class="box t-box">
+      <div class="t-info" id="tInfo"></div>
+      <div class="form t-opts">
+        <div class="field check"><input type="checkbox" id="tLlm"><label for="tLlm">תיקון לפי ההקשר</label></div>
+        <div class="field check"><input type="checkbox" id="tSpeak"><label for="tSpeak">הקראה</label></div>
+        <button class="link" id="tReset">ניקוי ההקשר</button>
+      </div>
+      <button class="talk" id="talkBtn"><span class="talk-dot"></span><span id="talkLabel">החזיקו כדי לדבר</span></button>
+      <div class="t-hint">אפשר גם להחזיק את מקש הרווח</div>
+      <div class="t-live" id="tLive"></div>
+      <div class="t-state" id="tState"></div>
+    </div>
+    <div class="t-turns" id="tTurns"></div>
   </div>
 </section>
 
@@ -1108,6 +1158,95 @@ function watchTranscribe() {
 $("reviewBackBtn").onclick = () => { stopPlay(); clearInterval(R.poll); openGroup(R.data?.name.split("/")[0] || location.hash.split("/")[1]); };
 $("transcribeBtn").onclick = transcribe;
 
+// ---------- trial ----------
+const T = {poll: 0, holding: false, info: null, shownTurns: -1};
+
+async function openTrial(speaker) {
+  show("trial");
+  location.hash = "trial";
+  T.info = await api("/api/try/info", {speaker: speaker || $("tSpeaker").value || ""}).catch((e) => ({error: e.message}));
+  if (T.info.error) { $("tInfo").textContent = "שגיאה: " + T.info.error; return; }
+  const sp = speaker || T.info.speakers[0] || "";
+  $("tSpeaker").innerHTML = T.info.speakers.map((n) => `<option ${n === sp ? "selected" : ""}>${esc(n)}</option>`).join("");
+  if (!speaker && sp) T.info = await api("/api/try/info", {speaker: sp});
+  const cfg = T.info.settings;
+  $("tLlm").checked = cfg.llm.enabled;
+  $("tSpeak").checked = cfg.tts.speak !== false;
+  $("tInfo").innerHTML = `תמלול: ${esc(T.info.model)} · תיקון: ${cfg.llm.enabled ? (T.info.llm_credentials ? esc(cfg.llm.model) : '<span class="warn-line">אין מפתח API</span>') : "כבוי"} · הקראה: ${esc(cfg.tts.voice)}`;
+  pollTrial();
+}
+
+function wordDiff(a, b) {
+  // Mark the words of b that are not in the same place in a (a short word-level diff).
+  const x = a.split(/\s+/), y = b.split(/\s+/);
+  const n = x.length, m = y.length, L = Array.from({length: n + 1}, () => new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+    L[i][j] = x[i] === y[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  const out = [];
+  let i = 0, j = 0;
+  while (i < n || j < m) {
+    if (i < n && j < m && x[i] === y[j]) { out.push(esc(y[j])); i++; j++; }
+    else if (j < m && (i >= n || L[i][j + 1] >= L[i + 1][j])) { out.push(`<ins>${esc(y[j])}</ins>`); j++; }
+    else { out.push(`<del>${esc(x[i])}</del>`); i++; }
+  }
+  return out.join(" ");
+}
+
+function renderTrial(st) {
+  const busy = st.state !== "idle" && st.state !== "recording";
+  $("talkBtn").classList.toggle("on", st.state === "recording");
+  $("talkBtn").disabled = busy;
+  $("talkLabel").textContent = st.state === "recording" ? "מדברים… שחררו לסיום" : busy ? "רגע…" : "החזיקו כדי לדבר";
+  $("tState").textContent = st.error ? "שגיאה: " + st.error
+    : {recording: "מקליט ומתמלל", transcribing: "מתמלל את כל המשפט…", correcting: "מתקן לפי ההקשר…", speaking: "מקריא…"}[st.state] || "";
+  if (st.state === "recording") $("tLive").textContent = st.partial || "…";
+  else if (st.turns.length) $("tLive").textContent = st.turns[st.turns.length - 1].final || "";
+  if (st.turns.length !== T.shownTurns || busy) {
+    T.shownTurns = st.turns.length;
+    $("tTurns").innerHTML = st.turns.slice().reverse().map((t) => {
+      const changed = t.corrected != null && t.corrected !== t.raw;
+      return `<div class="box turn">
+        <div class="final">${changed ? wordDiff(t.raw, t.corrected) : esc(t.final || t.raw || "(שקט)")}</div>
+        ${changed ? `<div class="raw">תמלול: ${esc(t.raw)}</div>` : ""}
+        ${t.note ? `<div class="warn-line">${esc(t.note)}</div>` : ""}
+        <div class="meta">${t.seconds ?? ""} שנ׳ דיבור · תמלול ${t.times.asr ?? "—"} שנ׳ (${esc(t.model)})${t.times.llm != null ? ` · תיקון ${t.times.llm} שנ׳` : ""}${t.times.tts != null ? ` · הקראה ${t.times.tts} שנ׳` : ""}${t.corrected != null && !changed ? " · התיקון לא שינה דבר" : ""}</div>
+      </div>`;
+    }).join("");
+  }
+}
+
+function pollTrial() {
+  clearInterval(T.poll);
+  const tick = async () => {
+    if (!$("trial").classList.contains("on")) { clearInterval(T.poll); return; }
+    try { renderTrial(await api("/api/try/status")); } catch (e) { /* the next poll tries again */ }
+  };
+  tick();
+  T.poll = setInterval(tick, 250);
+}
+
+async function talkStart() {
+  if (T.holding || $("talkBtn").disabled) return;
+  T.holding = true;
+  $("talkBtn").classList.add("on");
+  try { await api("/api/try/start", {speaker: $("tSpeaker").value}); }
+  catch (e) { $("tState").textContent = "שגיאה: " + e.message; T.holding = false; $("talkBtn").classList.remove("on"); }
+}
+async function talkStop() {
+  if (!T.holding) return;
+  T.holding = false;
+  await api("/api/try/stop", {}).catch((e) => { $("tState").textContent = "שגיאה: " + e.message; });
+}
+$("talkBtn").addEventListener("pointerdown", (e) => { e.preventDefault(); $("talkBtn").setPointerCapture(e.pointerId); talkStart(); });
+$("talkBtn").addEventListener("pointerup", talkStop);
+$("talkBtn").addEventListener("pointercancel", talkStop);
+$("trialBtn").onclick = () => openTrial();
+$("trialBackBtn").onclick = () => { clearInterval(T.poll); talkStop(); openHome(); };
+$("tSpeaker").onchange = () => openTrial($("tSpeaker").value);
+$("tLlm").onchange = async () => { await api("/api/settings", {llm: {enabled: $("tLlm").checked}}); openTrial($("tSpeaker").value); };
+$("tSpeak").onchange = async () => { await api("/api/settings", {tts: {speak: $("tSpeak").checked}}); };
+$("tReset").onclick = async () => { T.shownTurns = -1; renderTrial(await api("/api/try/reset", {})); $("tLive").textContent = ""; };
+
 // ---------- pipeline ----------
 const P = {data: null};
 const pctText = (v) => (v == null ? "—" : `${(v * 100).toFixed(1)}%`);
@@ -1193,10 +1332,12 @@ function renderPipeline() {
 
   $("stageLlm").innerHTML = `
     <div class="stage-head"><span class="step-num">2</span><h2>תיקון לפי ההקשר (מודל שפה)</h2>
-      <span class="chip">לא פעיל · מתוכנן לגרסה מתקדמת</span></div>
-    <div class="stage-model">${esc(cfg.llm.model)}</div>
-    <p class="note">מודל שפה יתקן את התמלול לפי המשפטים הקודמים, למשל "מלך" ← "מלח" כשההקשר הוא בישול. השלב הזה עדיין לא מומש. ההגדרות נשמרות לשימוש בעתיד.</p>
+      <span class="chip ${cfg.llm.enabled && d.llm_credentials ? "ok" : ""}">${!cfg.llm.enabled ? "כבוי" : d.llm_credentials ? "פעיל" : "אין מפתח API"}</span></div>
+    <div class="stage-model">${esc(cfg.llm.model)} · effort low</div>
+    <p class="note">מודל שפה מתקן את התמלול לפי המשפטים הקודמים, למשל "מלך" ← "מלח" כשההקשר הוא בישול. הוא משנה רק מילים שנשמעות דומה, ולא מנסח מחדש. הטקסט נשלח ל-Anthropic API.</p>
+    ${cfg.llm.enabled && !d.llm_credentials ? `<div class="warn-line">לא נמצא מפתח. הגדירו ANTHROPIC_API_KEY בטרמינל שממנו פותחים את האפליקציה, ופתחו אותה מחדש.</div>` : ""}
     <div class="form">
+      <div class="field check"><input type="checkbox" id="pLlmOn" ${cfg.llm.enabled ? "checked" : ""}><label for="pLlmOn">פעיל</label></div>
       <div class="field"><label for="pLlm">מודל</label><select id="pLlm">${d.llm_models.map((m) =>
         `<option ${m === cfg.llm.model ? "selected" : ""}>${esc(m)}</option>`).join("")}</select></div>
     </div>`;
@@ -1217,6 +1358,7 @@ function renderPipeline() {
   // events
   $("pBase").onchange = () => savePipeline({asr: {base: $("pBase").value}});
   $("pLlm").onchange = () => savePipeline({llm: {model: $("pLlm").value}});
+  $("pLlmOn").onchange = () => savePipeline({llm: {enabled: $("pLlmOn").checked}});
   $("pVoice").onchange = () => savePipeline({tts: {voice: $("pVoice").value}});
   $("pRate").onchange = () => savePipeline({tts: {rate: +$("pRate").value}});
   for (const id of ["pEpochs", "pLr", "pRank", "pBatch", "pWords"]) $(id).onchange = saveTrain;
@@ -1301,7 +1443,14 @@ $("jobbar").onclick = () => {
   if (n?.startsWith("train:")) openPipeline(n.slice(6)); else if (n) openGroup(n.split("/")[0]);
 };
 
+document.addEventListener("keyup", (e) => {
+  if ($("trial").classList.contains("on") && e.key === " ") { e.preventDefault(); talkStop(); }
+});
 document.addEventListener("keydown", (e) => {
+  if ($("trial").classList.contains("on")) {
+    if (e.key === " " && !e.repeat && !e.target.closest("input, select")) { e.preventDefault(); talkStart(); }
+    return;
+  }
   for (const id of ["confirmOverlay", "settingsOverlay"]) {
     if ($(id).classList.contains("on")) {
       if (e.key === "Escape") $(id).classList.remove("on");
@@ -1335,6 +1484,7 @@ window.addEventListener("pagehide", () => navigator.sendBeacon("/api/bye"));
 if (location.hash.startsWith("#review/")) openReview(decodeURIComponent(location.hash.slice(8)));
 else if (location.hash.startsWith("#group/")) openGroup(decodeURIComponent(location.hash.slice(7)));
 else if (location.hash === "#pipeline") openPipeline();
+else if (location.hash === "#trial") openTrial();
 else openHome().catch((e) => { $("homeError").textContent = "שגיאה: " + e.message; });
 </script>
 </body>

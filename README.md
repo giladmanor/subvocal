@@ -103,6 +103,20 @@ Each part folder contains `full-session.flac`, `events.json` (the card flips), `
 To make the sentence list from the command line, run
 `python -m subvocal.plan --session <session folder name> --n 40`.
 
+### Try-out screen
+
+Click **ניסוי** on the home screen to try the full pipeline:
+
+1. Hold the round button (or the Space key) and talk. The screen shows the partial transcript.
+2. Release the button. The app transcribes the full sentence with the model of the speaker.
+3. A language model corrects similar-sounding words with the context of the earlier sentences.
+   The screen marks each changed word.
+4. The macOS `say` command speaks the result.
+
+> **Note:** The correction sends the transcript to the Anthropic API. It needs an API key:
+> set `ANTHROPIC_API_KEY` in the terminal that starts the app. Without a key, the app speaks
+> the transcript without a correction. The audio stays on the computer.
+
 ### Review screen
 
 To see the labels of a part, click **הצגת התוויות** on the session card. The review screen shows:
