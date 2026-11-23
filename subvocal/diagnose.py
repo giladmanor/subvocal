@@ -78,7 +78,8 @@ def run(refs: list[dict], hyps: dict[str, str], is_probe: bool, ph: Phonemizer) 
             ref_ph = CARRIER_PHONEMES + ref["phonemes"].split()
             hyp_norm = strip_carrier(hyp_text)
             accepted = {ref["word"], *normalize(ref.get("accept") or "").split()}
-            ok = bool(accepted & set(hyp_norm.split()))
+            words = hyp_norm.split()
+            ok = len(words) == 1 and words[0] in accepted  # extra sounds count as errors
             full = normalize(hyp_text)
             hyp_ph = ref_ph if ok else flatten(split_text(ph(full))) if full else []
             foils = [f for f in ref["foils"].split() if f in hyp_norm.split()]

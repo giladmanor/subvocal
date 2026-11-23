@@ -206,6 +206,17 @@
   .mark-ok { color: var(--accent); font-weight: 700; }
   .mark-bad { color: var(--rec); font-weight: 700; }
   .mark-warn { color: #c98a00; font-weight: 700; }
+
+  /* ---------- plan panel ---------- */
+  #planOverlay { position: fixed; z-index: 20; padding: 16px; }
+  .panel { box-shadow: var(--shadow); background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 22px 26px; width: min(620px, 100%); max-height: 90vh; overflow: auto; }
+  .panel h2 { margin: 0 0 6px; font-size: 20px; }
+  .panel p { margin: 6px 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+  .panel .row { display: flex; gap: 10px; align-items: center; margin: 14px 0; flex-wrap: wrap; }
+  .panel input[type=number] { width: 80px; }
+  .panel table { width: 100%; margin: 10px 0; }
+  .panel td, .panel th { padding: 5px 8px; text-align: right; font-size: 14px; }
+  .panel .bar { height: 8px; border-radius: 4px; background: var(--rec); opacity: .7; }
   .play { padding: 6px 12px; font-size: 14px; border-radius: 10px; }
   .progress-text { font-size: 13px; color: var(--muted); }
 </style>
@@ -315,6 +326,7 @@
     <button class="ghost" id="reviewBackBtn">→ הקלטות</button>
     <h1 id="rTitle"></h1>
     <span class="progress-text" id="rProgress"></span>
+    <button class="ghost" id="planBtn" title="בחירת משפטים לפי הצלילים שהמודל טועה בהם">רשימת משפטים לפי האבחון</button>
     <button class="primary" id="transcribeBtn">תמלול</button>
   </div>
   <div class="r-stats" id="rStats"></div>
@@ -336,6 +348,25 @@
     </table>
   </div>
 </section>
+
+<div class="overlay" id="planOverlay">
+  <div class="panel">
+    <h2>רשימת משפטים לפי האבחון</h2>
+    <p>האפליקציה בודקת את כל ההקלטות המתומללות של הדובר, ומוצאת את הצלילים שהמודל טועה בהם.
+       אחר כך היא בוחרת משפטים קצרים שעדיין לא הוקלטו, עם יותר מופעים של הצלילים האלה.</p>
+    <div class="row">
+      <label for="planN">מספר משפטים</label>
+      <input type="number" id="planN" min="5" max="300" step="5" value="40">
+      <button class="primary" id="planMakeBtn">בניית הרשימה</button>
+      <span class="progress-text" id="planStatus"></span>
+    </div>
+    <div id="planResult"></div>
+    <div class="row">
+      <button class="primary" id="planRecordBtn" style="display:none">הקלטה עם הרשימה החדשה</button>
+      <button class="ghost" id="planCloseBtn">סגירה</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const $ = (id) => document.getElementById(id);
@@ -764,9 +795,50 @@ $("sessionsBackBtn").onclick = () => { show("setup"); loadConfig(); };
 $("reviewBackBtn").onclick = () => { stopPlay(); clearInterval(R.poll); openSessions(); };
 $("reviewDoneBtn").onclick = () => lastSession && openReview(lastSession);
 $("transcribeBtn").onclick = transcribe;
+
+// ---------- plan ----------
+let PLAN = null;
+$("planBtn").onclick = () => {
+  $("planResult").innerHTML = ""; $("planStatus").textContent = ""; $("planRecordBtn").style.display = "none";
+  $("planOverlay").classList.add("on");
+};
+$("planCloseBtn").onclick = () => $("planOverlay").classList.remove("on");
+$("planMakeBtn").onclick = async () => {
+  $("planMakeBtn").disabled = true;
+  $("planStatus").textContent = "בונה...";
+  try {
+    PLAN = await api("/api/plan", {speaker: R.data.meta.speaker, n: +$("planN").value || 40});
+    const max = Math.max(...PLAN.sounds.map((x) => x.rate), 0.01);
+    $("planResult").innerHTML = `
+      <p>${PLAN.sessions.length} הקלטות של ${esc(PLAN.speaker)} · ${PLAN.recorded} משפטים כבר הוקלטו · ${PLAN.remaining} נשארו</p>
+      <table><thead><tr><th>צליל</th><th>טעויות</th><th>שיעור</th><th></th><th>ברשימה</th><th>ברשימה רגילה</th></tr></thead><tbody>
+      ${PLAN.sounds.map((x) => `<tr><td><b>${esc(x.hebrew)}</b> <span style="color:var(--muted);direction:ltr;display:inline-block">${esc(x.phoneme)}</span></td>
+        <td>${x.err} / ${x.n}</td><td>${Math.round(x.rate * 100)}%</td>
+        <td style="width:30%"><div class="bar" style="width:${(x.rate / max) * 100}%"></div></td>
+        <td>${x.in_list}</td><td style="color:var(--muted)">${x.in_plain}</td></tr>`).join("")}
+      </tbody></table>
+      <p>"ברשימה" הוא מספר המופעים של הצליל ב-${PLAN.count} המשפטים שנבחרו. "ברשימה רגילה" הוא המספר ברשימה באותו גודל, בלי האבחון.</p>
+      <p>הרשימה נשמרה בקובץ <span style="direction:ltr;display:inline-block">${esc(PLAN.list)}</span>.</p>`;
+    $("planStatus").textContent = "";
+    $("planRecordBtn").style.display = "";
+  } catch (e) { $("planStatus").textContent = "שגיאה: " + e.message; }
+  $("planMakeBtn").disabled = false;
+};
+$("planRecordBtn").onclick = async () => {
+  $("planOverlay").classList.remove("on");
+  show("setup");
+  await loadConfig();
+  $("list").value = PLAN.list;
+  $("speaker").value = PLAN.speaker;
+  $("startBtn").focus();
+};
 window.addEventListener("resize", () => { if ($("review").classList.contains("on")) { R.peaks = null; drawWave(); } });
 
 document.addEventListener("keydown", (e) => {
+  if ($("planOverlay").classList.contains("on")) {
+    if (e.key === "Escape") $("planOverlay").classList.remove("on");
+    return;
+  }
   if ($("review").classList.contains("on")) {
     if (e.key === " ") {
       e.preventDefault();

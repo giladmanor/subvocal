@@ -239,6 +239,9 @@ class App:
             return review.load_session(path.removeprefix("/api/session/"))
         if path == "/api/transcribe":
             return review.start_transcription(body["name"])
+        if path == "/api/plan":
+            from .plan import make_plan
+            return make_plan(safe_name(body["speaker"]), int(body.get("n", 40)))
         with self.lock:
             s = self.session
             if path == "/api/config":

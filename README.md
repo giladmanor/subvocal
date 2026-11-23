@@ -53,18 +53,15 @@ The folder contains `full-session.flac`, `events.json` (the card flips), `sessio
 
 1. Open the recorder, and record the probe list (the default list):
    `python -m subvocal.record`
-2. Transcribe the recordings:
-   `python -m subvocal.transcribe --audio $SESSION --out $SESSION/hyp.tsv`
-3. Make the speaker profile:
-   `python -m subvocal.diagnose --hyp $SESSION/hyp.tsv --profile data/user-recordings/dana-profile.json`
-4. Select the first sentences:
-   `python -m subvocal.select --n 40 --profile data/user-recordings/dana-profile.json --out data/user-recordings/dana-next.tsv`
-5. Record the sentences. In the recorder, select `data/user-recordings/dana-next.tsv` from the list menu.
-6. Transcribe them, and update the profile:
-   `python -m subvocal.transcribe --audio $SESSION --out $SESSION/hyp.tsv`
-   `python -m subvocal.diagnose --refs prompts/sentences.tsv --hyp $SESSION/hyp.tsv --profile data/user-recordings/dana-profile.json`
-7. Add the recorded IDs to `data/user-recordings/dana-recorded.txt`.
-8. Select the next sentences with `--done data/user-recordings/dana-recorded.txt`, and do steps 5 to 8 again.
+2. At the end of the session, the app transcribes the recordings automatically.
+3. On the review screen, click **רשימת משפטים לפי האבחון**. Set the number of sentences,
+   and click **בניית הרשימה**. The app shows the problem sounds of the speaker.
+4. Click **הקלטה עם הרשימה החדשה**, and record the sentences.
+5. After the session, do step 3 again. The next list does not include the recorded sentences.
+
+The list comes from all the transcribed sessions of the speaker, probe and sentences.
+The app writes `data/user-recordings/<speaker>-profile.json` and `<speaker>-next.tsv`.
+To do the same steps from the command line, run `python -m subvocal.plan --speaker dana --n 40`.
 
 The cards show the text with niqqud.
 
