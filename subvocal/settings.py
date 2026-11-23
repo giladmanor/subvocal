@@ -17,14 +17,22 @@ BASES = {
     "large-v3": {"label": "ivrit-ai/whisper-large-v3", "hf": "ivrit-ai/whisper-large-v3",
                  "ct2": "ivrit-ai/whisper-large-v3-ct2"},
 }
-LLM_MODELS = ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"]
+# Local language models (llama.cpp, GGUF files in data/models/llm/). See subvocal/llm.py.
+LOCAL_LLMS = {
+    "dictalm-3.0-12b": {"label": "DictaLM 3.0 12B Instruct (מקומי)",
+                        "repo": "dicta-il/DictaLM-3.0-Nemotron-12B-Instruct-GGUF",
+                        "file": "DictaLM-3.0-Nemotron-12B-Instruct-Q4_K_M.gguf"},
+}
+DEFAULT_LOCAL_LLM = "dictalm-3.0-12b"
+API_LLMS = ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"]
+LLM_MODELS = [*LOCAL_LLMS, *API_LLMS]
 
 DEFAULTS = {
     "plan_sentences": 40,
     "asr": {"base": "turbo"},
     "train": {"epochs": 5, "lr": 0.0005, "rank": 32, "batch": 4, "with_words": False},
     "active": {},  # speaker -> the name of the training run that the speaker uses ("" = the base model)
-    "llm": {"enabled": True, "model": "claude-opus-5-5"},
+    "llm": {"enabled": True, "model": DEFAULT_LOCAL_LLM},
     "tts": {"voice": "Carmit", "rate": 180, "speak": True},
 }
 

@@ -1172,7 +1172,7 @@ async function openTrial(speaker) {
   const cfg = T.info.settings;
   $("tLlm").checked = cfg.llm.enabled;
   $("tSpeak").checked = cfg.tts.speak !== false;
-  $("tInfo").innerHTML = `תמלול: ${esc(T.info.model)} · תיקון: ${cfg.llm.enabled ? (T.info.llm_credentials ? esc(cfg.llm.model) : '<span class="warn-line">אין מפתח API</span>') : "כבוי"} · הקראה: ${esc(cfg.tts.voice)}`;
+  $("tInfo").innerHTML = `תמלול: ${esc(T.info.model)} · תיקון: ${cfg.llm.enabled ? (T.info.llm_credentials ? esc(T.info.llm_label || cfg.llm.model) : `<span class="warn-line">${esc(T.info.llm_reason)}</span>`) : "כבוי"} · הקראה: ${esc(cfg.tts.voice)}`;
   pollTrial();
 }
 
@@ -1333,14 +1333,15 @@ function renderPipeline() {
 
   $("stageLlm").innerHTML = `
     <div class="stage-head"><span class="step-num">2</span><h2>תיקון לפי ההקשר (מודל שפה)</h2>
-      <span class="chip ${cfg.llm.enabled && d.llm_credentials ? "ok" : ""}">${!cfg.llm.enabled ? "כבוי" : d.llm_credentials ? "פעיל" : "אין מפתח API"}</span></div>
-    <div class="stage-model">${esc(cfg.llm.model)} · effort low</div>
-    <p class="note">מודל שפה מתקן את התמלול לפי המשפטים הקודמים, למשל "מלך" ← "מלח" כשההקשר הוא בישול. הוא משנה רק מילים שנשמעות דומה, ולא מנסח מחדש. הטקסט נשלח ל-Anthropic API.</p>
-    ${cfg.llm.enabled && !d.llm_credentials ? `<div class="warn-line">לא נמצא מפתח. הגדירו ANTHROPIC_API_KEY בטרמינל שממנו פותחים את האפליקציה, ופתחו אותה מחדש.</div>` : ""}
+      <span class="chip ${cfg.llm.enabled && d.llm_credentials ? "ok" : ""}">${!cfg.llm.enabled ? "כבוי" : d.llm_credentials ? "פעיל" : "לא מוכן"}</span></div>
+    <div class="stage-model">${esc(d.llm.labels[cfg.llm.model])}${d.llm.local ? " · llama.cpp על ה-GPU של ה-Mac · 4 ביט" : " · effort low"}</div>
+    <p class="note">מודל שפה מתקן את התמלול לפי המשפטים הקודמים, למשל "מלך" ← "מלח" כשההקשר הוא בישול. הוא משנה רק מילים שנשמעות דומה, ולא מנסח מחדש.
+      ${d.llm.local ? "המודל רץ על המחשב: הטקסט לא יוצא מהמחשב, ואין צורך במפתח API. DictaLM 3.0 הוא מודל עברי של דיקטה, עם משקלות פתוחים (NVIDIA Open Model License)." : "הטקסט נשלח ל-Anthropic API."}</p>
+    ${cfg.llm.enabled && !d.llm_credentials ? `<div class="warn-line">${esc(d.llm.reason)}${d.llm.local ? "" : ". הגדירו ANTHROPIC_API_KEY בטרמינל שממנו פותחים את האפליקציה, ופתחו אותה מחדש."}</div>` : ""}
     <div class="form">
       <div class="field check"><input type="checkbox" id="pLlmOn" ${cfg.llm.enabled ? "checked" : ""}><label for="pLlmOn">פעיל</label></div>
       <div class="field"><label for="pLlm">מודל</label><select id="pLlm">${d.llm_models.map((m) =>
-        `<option ${m === cfg.llm.model ? "selected" : ""}>${esc(m)}</option>`).join("")}</select></div>
+        `<option value="${esc(m)}" ${m === cfg.llm.model ? "selected" : ""}>${esc(d.llm.labels[m])}</option>`).join("")}</select></div>
     </div>`;
 
   const tts = d.tts;

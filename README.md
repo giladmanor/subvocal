@@ -5,7 +5,7 @@ Subvocal helps Hebrew speakers with a speech impairment to communicate freely.
 It uses a three-step pipeline:
 
 1. A Hebrew Whisper model from [ivrit.ai](https://huggingface.co/ivrit-ai), fine-tuned with LoRA on the voice of the user, writes the speech as text.
-2. An LLM corrects the text with the conversation context (advanced mode).
+2. An LLM corrects the text with the conversation context (advanced mode). The default is a local Hebrew model, DictaLM 3.0 12B.
 3. The macOS `say` command speaks the text aloud.
 
 See [BRIEF.md](BRIEF.md) for the full project brief, the models to test, and the fine-tuning options.
@@ -113,9 +113,40 @@ Click **ניסוי** on the home screen to try the full pipeline:
    The screen marks each changed word.
 4. The macOS `say` command speaks the result.
 
-> **Note:** The correction sends the transcript to the Anthropic API. It needs an API key:
-> set `ANTHROPIC_API_KEY` in the terminal that starts the app. Without a key, the app speaks
-> the transcript without a correction. The audio stays on the computer.
+#### The language model of the correction
+
+The default model is **DictaLM 3.0 12B Instruct** from [Dicta](https://dicta.org.il/dicta-lm-3), a
+Hebrew model with open weights. It runs on the computer with llama.cpp, on the Mac GPU (Metal).
+The transcript does not leave the computer, and the app does not need an API key. A correction
+takes about 2 seconds.
+
+1. Download the model one time (4-bit GGUF, about 7.5 GB, into `data/models/llm/`):
+
+   ```bash
+   python -m subvocal.llm --download
+   ```
+
+2. Test a correction in the terminal:
+
+   ```bash
+   python -m subvocal.llm "תוסיף קצת מלך למרק" --context "אני מבשל מרק עוף."
+   ```
+
+> **Note:** If the build of `llama-cpp-python` fails with `'mutex' file not found`, the compiler
+> does not find the C++ headers. Give the path of the headers to the build:
+>
+> ```bash
+> INC=$(xcrun --show-sdk-path)/usr/include/c++/v1
+> CMAKE_ARGS="-DGGML_METAL=on -DCMAKE_CXX_FLAGS=-isystem\ $INC" pip install llama-cpp-python
+> ```
+
+The license of the model is the
+[NVIDIA Open Model License](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/),
+because Dicta started the model from NVIDIA Nemotron-Nano-12B-v2.
+
+You can also select a Claude model on the **אימון מודל** screen. These models send the transcript
+to the Anthropic API, and need an API key: set `ANTHROPIC_API_KEY` in the terminal that starts the app.
+Without a key, the app speaks the transcript without a correction. The audio stays on the computer.
 
 ### Review screen
 

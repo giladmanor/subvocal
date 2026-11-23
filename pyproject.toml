@@ -12,6 +12,7 @@ dependencies = [
     "numpy",
     "soxr",
     "anthropic",
+    "llama-cpp-python",
 ]
 
 [project.optional-dependencies]

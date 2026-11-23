@@ -5,7 +5,7 @@
 2. When the user releases the button, the app transcribes the full audio with the model of
    the speaker (the fine-tuned model if the speaker uses one, else the base model).
 3. A language model corrects the transcript with the context of the earlier sentences
-   (if it is on, and the computer has Anthropic credentials).
+   (if it is on). The default is a local Hebrew model. See subvocal/llm.py.
 4. The macOS "say" command speaks the result.
 
 The audio stays in memory. The app does not save it.
@@ -18,26 +18,12 @@ import subprocess
 import threading
 import time
 
-from . import settings
+from . import llm, settings
 from .transcribe import load_model, transcribe_audio
 
 OUT_RATE = 16000
 PARTIAL_EVERY = 1.0  # seconds
 HISTORY = 8          # earlier sentences that the language model sees
-
-SYSTEM_PROMPT = """You correct Hebrew speech-recognition transcripts for a speaker with a speech impairment.
-
-The recognizer sometimes writes a wrong word that sounds similar to the word the speaker said:
-for example a word that differs in one sound, or a homophone with a different spelling
-(מלך / מלח, ספה / ספא). Use the earlier sentences of the conversation as context.
-
-Rules:
-- Change a word only if the context makes a different, similar-sounding word clearly more likely.
-- Do not rephrase, translate, add words, or fix the style. Keep the speaker's own words.
-- Keep numbers as the recognizer wrote them.
-- If the transcript is empty or you cannot improve it, return it unchanged.
-- Return only the corrected Hebrew sentence, with no explanation."""
-
 
 def for_speech(text: str) -> str:
     """Prepare text for the Hebrew voice of "say".
@@ -81,6 +67,9 @@ class Trial:
 
     def warm(self, speaker: str) -> None:
         threading.Thread(target=lambda: self._model(self.model_path(speaker)[0]), daemon=True).start()
+        cfg = settings.load()["llm"]
+        if cfg["enabled"]:
+            llm.warm(cfg["model"])
 
     # ------------------------------------------------------------ recording
 
@@ -155,8 +144,9 @@ class Trial:
             turn["times"]["asr"] = round(time.time() - t0, 2)
             text = turn["raw"]
 
-            if cfg["llm"]["enabled"] and text and not llm_credentials():
-                turn["note"] = "התיקון לא רץ: אין מפתח API (ANTHROPIC_API_KEY)."
+            ok, why = llm.ready(cfg["llm"]["model"])
+            if cfg["llm"]["enabled"] and text and not ok:
+                turn["note"] = f"התיקון לא רץ: {why}."
             elif cfg["llm"]["enabled"] and text:
                 self.state = "correcting"
                 t0 = time.time()
@@ -182,25 +172,8 @@ class Trial:
             self.state = "idle"
 
     def _correct(self, text: str, model: str) -> str:
-        import anthropic
-
-        client = anthropic.Anthropic()
         context = [t["final"] for t in self.turns[-HISTORY:] if t.get("final")]
-        user = ("Earlier sentences (oldest first):\n" + "\n".join(f"- {c}" for c in context) + "\n\n"
-                if context else "There are no earlier sentences.\n\n") + f"Transcript to correct:\n{text}"
-        response = client.beta.messages.create(
-            model=model,
-            max_tokens=1024,
-            system=SYSTEM_PROMPT,
-            output_config={"effort": "low"},  # a short task, and the speaker waits for the answer
-            betas=["server-side-fallback-2026-07-01"],
-            fallbacks="default",
-            messages=[{"role": "user", "content": user}],
-        )
-        if response.stop_reason == "refusal":
-            raise RuntimeError("the language model declined the request")
-        out = "".join(b.text for b in response.content if b.type == "text").strip()
-        return out or text
+        return llm.correct(text, context, model)
 
     # ------------------------------------------------------------ state
 
@@ -216,9 +189,5 @@ TRIAL = Trial()
 
 
 def llm_credentials() -> bool:
-    """True if the computer has Anthropic credentials (an API key, a token, or an `ant` profile)."""
-    import os
-    from pathlib import Path
-
-    return bool(os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN")
-                or (Path.home() / ".config" / "anthropic").exists())
+    """True if the selected language model can run (downloaded, or with API credentials)."""
+    return llm.ready(settings.load()["llm"]["model"])[0]

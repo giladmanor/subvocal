@@ -276,7 +276,10 @@ class App:
         if action == "info":
             speaker = groups.safe_name(body.get("speaker", ""))
             TRIAL.warm(speaker)
+            from .llm import ready
             return {"model": TRIAL.model_path(speaker)[1], "llm_credentials": llm_credentials(),
+                    "llm_reason": ready(settings.load()["llm"]["model"])[1],
+                    "llm_label": settings.LOCAL_LLMS.get(settings.load()["llm"]["model"], {}).get("label"),
                     "speakers": groups.speakers(), "settings": settings.load()}
         return TRIAL.status()
 

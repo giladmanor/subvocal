@@ -1,7 +1,7 @@
 """The status of the three stages of the pipeline, and the jobs that the pipeline screen starts.
 
 1. Transcription: the base Whisper model, or a fine-tuned model of the speaker (subvocal/train.py).
-2. Context correction with a language model: not in the first version. The screen keeps its settings.
+2. Context correction with a language model: a local Hebrew model, or the Anthropic API (subvocal/llm.py).
 3. Speech: the macOS "say" command, with a voice and a rate.
 """
 
@@ -14,7 +14,7 @@ import subprocess
 import sys
 import threading
 
-from . import review, settings
+from . import llm, review, settings
 from .groups import list_groups
 from .phonetics import REPO_ROOT
 from .trial import for_speech, llm_credentials
@@ -68,6 +68,9 @@ def status(speaker: str | None) -> dict:
                 "job": review.JOBS.get(f"train:{speaker}", {})},
         "tts": {"engine": "macOS say", "os": f"macOS {platform.mac_ver()[0]}", "voices": voices()},
         "llm_credentials": llm_credentials(),
+        "llm": {"local": llm.is_local(cfg["llm"]["model"]), "reason": llm.ready(cfg["llm"]["model"])[1],
+                "labels": {m: settings.LOCAL_LLMS[m]["label"] if llm.is_local(m) else m for m in settings.LLM_MODELS},
+                "downloaded": {m: llm.downloaded(m) for m in settings.LOCAL_LLMS}},
     }
 
 
