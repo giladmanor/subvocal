@@ -314,6 +314,9 @@
   .panel .bar { height: 8px; border-radius: 4px; background: var(--rec); opacity: .7; }
   .play { padding: 6px 12px; font-size: 14px; border-radius: 10px; }
   .progress-text { font-size: 13px; color: var(--muted); }
+.v-del { text-decoration: line-through; opacity: .55; }
+.v-unsure { text-decoration-line: underline; text-decoration-style: dotted; }
+.v-del.v-unsure { text-decoration-line: line-through underline; }
 </style>
 </head>
 <body>
@@ -1192,13 +1195,27 @@ function wordDiff(a, b) {
   return out.join(" ");
 }
 
+// The words of a turn after the voice filter: removed words crossed out, unsure words underlined.
+function voiceWords(words) {
+  return words.map((w) => {
+    const title = {own: "של הדובר", other: "קול אחר", unsure: "לא בטוח", silence: "בלי דיבור"}[w.label];
+    const cls = (w.kept ? "" : "v-del ") + (w.label === "unsure" ? "v-unsure" : "");
+    return `<span class="${cls}" title="${title}">${esc(w.word)}</span>`;
+  }).join(" ");
+}
+function voiceMeta(v) {
+  if (v.mode === "cut") return v.removed ? `<b>הוסרו ${v.removed} שנ׳ של דיבור אחר</b>` : "לא הוסר דבר";
+  return (v.removed_words ? `<b>הוסרו ${v.removed_words} מילים</b>` : "לא הוסרו מילים")
+    + (v.decided ? " · מודל השפה החליט על מילים לא בטוחות" : "");
+}
+
 function renderTrial(st) {
   const busy = st.state !== "idle" && st.state !== "recording";
   $("talkBtn").classList.toggle("on", st.state === "recording");
   $("talkBtn").disabled = busy;
   $("talkLabel").textContent = st.state === "recording" ? "מדברים… שחררו לסיום" : busy ? "רגע…" : "החזיקו כדי לדבר";
   $("tState").textContent = st.error ? "שגיאה: " + st.error
-    : {recording: "מקליט ומתמלל", transcribing: "מתמלל את כל המשפט…", correcting: "מתקן לפי ההקשר…", speaking: "מקריא…"}[st.state] || "";
+    : {recording: "מקליט ומתמלל", transcribing: "מתמלל את כל המשפט…", checking: "בודק מילים לא בטוחות…", correcting: "מתקן לפי ההקשר…", speaking: "מקריא…"}[st.state] || "";
   if (st.state === "recording") $("tLive").textContent = st.partial || "…";
   else if (st.turns.length) $("tLive").textContent = st.turns[st.turns.length - 1].final || "";
   if (st.turns.length !== T.shownTurns || busy) {
@@ -1208,8 +1225,9 @@ function renderTrial(st) {
       return `<div class="box turn">
         <div class="final">${changed ? wordDiff(t.raw, t.corrected) : esc(t.final || t.raw || "(שקט)")}</div>
         ${changed ? `<div class="raw">תמלול: ${esc(t.raw)}</div>` : ""}
+        ${t.voice?.words && t.voice.removed_words ? `<div class="raw">סינון קול: ${voiceWords(t.voice.words)}</div>` : ""}
         ${t.note ? `<div class="warn-line">${esc(t.note)}</div>` : ""}
-        <div class="meta">${t.seconds ?? ""} שנ׳ דיבור · תמלול ${t.times.asr ?? "—"} שנ׳ (${esc(t.model)})${t.times.llm != null ? ` · תיקון ${t.times.llm} שנ׳` : ""}${t.times.tts != null ? ` · הקראה ${t.times.tts} שנ׳` : ""}${t.corrected != null && !changed ? " · התיקון לא שינה דבר" : ""}</div>
+        <div class="meta">${t.seconds ?? ""} שנ׳ דיבור${t.voice ? ` · סינון קול: ${voiceMeta(t.voice)}` : ""} · תמלול ${t.times.asr ?? "—"} שנ׳ (${esc(t.model)})${t.times.llm != null ? ` · תיקון ${t.times.llm} שנ׳` : ""}${t.times.tts != null ? ` · הקראה ${t.times.tts} שנ׳` : ""}${t.corrected != null && !changed ? " · התיקון לא שינה דבר" : ""}</div>
       </div>`;
     }).join("");
   }
@@ -1268,6 +1286,39 @@ async function savePipeline(changes) {
   catch (e) { $("pError").textContent = "שגיאה: " + e.message; }
 }
 
+const SCENARIO_LABEL = {"clean": "בלי דיבור אחר", "around -6dB": "אדם אחר לפני ואחרי (שקט יותר)",
+  "around 0dB": "אדם אחר לפני ואחרי (באותה עוצמה)", "between": "אדם אחר בהפסקה באמצע",
+  "overlap 10dB": "אדם אחר בו-זמנית (שקט יותר)", "overlap 0dB": "אדם אחר בו-זמנית (באותה עוצמה)"};
+
+const METHOD_LABEL = {raw: "בלי סינון", filtered: "עם סינון", cut: "חיתוך השמע", words: "תוויות מילים",
+  "words+llm": "תוויות + מודל שפה"};
+
+function voiceBlock(d) {
+  const cfg = d.settings, v = d.asr.voice || {}, vp = v.print, t = v.test;
+  const cell = (r, base) => `<span class="${base ? delta(base.wer, r.wer) : ""}">${pctText(r.wer)}</span>
+    <span class="muted">· ${r.extra} זרות · ${r.lost} אבדו</span>`;
+  const rows = t ? Object.entries(t.scenarios).map(([k, s]) => `<tr><td>${esc(SCENARIO_LABEL[k] || k)}</td>
+      ${t.methods.map((m) => `<td>${cell(s[m], m === "raw" ? null : s.raw)}</td>`).join("")}</tr>`).join("") : "";
+  return `
+    <h2 style="font-size:16px;margin-top:6px">סינון לפי קול הדובר</h2>
+    <p class="note">האפליקציה משווה את הדיבור ל"טביעת הקול" של הדובר, שנוצרת ממשפטי האימון שלו, ומסירה דיבור של אנשים אחרים.
+      הסינון עובד כשאדם אחר מדבר לפני הדובר, אחריו, או בהפסקה בין המילים. הוא לא יכול להפריד שני אנשים שמדברים באותו זמן.</p>
+    <div class="form">
+      <div class="field check"><input type="checkbox" id="pVoiceOn" ${cfg.voice.filter ? "checked" : ""}><label for="pVoiceOn">פעיל</label></div>
+      <div class="field"><label for="pVoiceMode">שיטה</label><select id="pVoiceMode">
+        <option value="words+llm" ${cfg.voice.mode === "words+llm" ? "selected" : ""}>תוויות מילים + מודל שפה למילים לא בטוחות</option>
+        <option value="words" ${cfg.voice.mode === "words" ? "selected" : ""}>תוויות מילים</option>
+        <option value="cut" ${cfg.voice.mode === "cut" ? "selected" : ""}>חיתוך השמע לפני התמלול</option></select></div>
+      <div class="field"><label>טביעת קול</label><span>${vp ? `${esc(dateText(vp.created))} · ${vp.clips} משפטים · סף ${vp.threshold.toFixed(2)}${vp.sessions ? "" : ' · <span class="warn-line">נוצרה לפני בחירת הסשנים: צרו אותה מחדש</span>'}` : '<span class="warn-line">אין עדיין</span>'}</span></div>
+      <button class="ghost" id="pEnrollBtn" ${d.asr.data.train_clips && d.asr.chosen.length ? "" : "disabled"}>${vp ? "יצירה מחדש" : "יצירת טביעת קול"}</button>
+    </div>
+    ${cfg.voice.filter && !vp ? '<div class="warn-line">הסינון פעיל, אבל אין טביעת קול לדובר הזה, ולכן הוא לא רץ.</div>' : ""}
+    ${t ? `<table class="runs"><thead><tr><th>מבחן רעש (${t.clips} משפטי מבחן) · WER</th>
+      ${t.methods.map((m) => `<th>${esc(METHOD_LABEL[m] || m)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>
+      <p class="note">"זרות": מילים שהדובר לא אמר. "אבדו": מילים של הדובר שלא בתמלול. הדיבור האחר מגיע מ-FLEURS (דוברי עברית אחרים, במיקרופון אחר), ולכן המציאות יכולה להיות קשה יותר.
+      להרצת המבחן: <code>python -m subvocal.voice --test ${esc(d.speaker)}</code></p>` : ""}`;
+}
+
 function renderPipeline() {
   const d = P.data, cfg = d.settings, asr = d.asr, run = asr.runs.find((r) => r.name === asr.active);
   $("pSpeaker").innerHTML = d.speakers.map((n) => `<option ${n === d.speaker ? "selected" : ""}>${esc(n)}</option>`).join("");
@@ -1304,9 +1355,19 @@ function renderPipeline() {
         `<option value="${k}" ${k === cfg.asr.base ? "selected" : ""}>${esc(b.label)}</option>`).join("")}</select></div>
       <div class="field"><label>מודל בשימוש</label><button class="ghost" data-use="" ${run ? "" : "disabled"}>${run ? "חזרה לבסיסי" : "בסיסי בשימוש"}</button></div>
     </div>
+    <h2 style="font-size:16px;margin-top:6px">סשנים לאימון</h2>
+    <p class="note">בחרו את הסשנים שבהם מדבר <b>${esc(d.speaker)}</b> בלבד. האימון, טביעת הקול ומבחן הרעש משתמשים רק בסשנים שנבחרו.
+      שם הדובר בסשן לא מספיק: בסשן יכולים להיות גם קולות של אנשים אחרים, למשל מי שמסביר את ההקלטה.</p>
+    <table class="runs"><thead><tr><th></th><th>סשן</th><th>שם הדובר בסשן</th><th>משפטים</th><th>מילים</th><th>מבחן</th></tr></thead><tbody>
+      ${asr.sessions.map((g) => `<tr><td><input type="checkbox" data-session="${esc(g.name)}" ${g.chosen ? "checked" : ""}></td>
+        <td>${esc(dateText(g.created))}</td><td>${esc(g.speaker)}${g.speaker === d.speaker ? "" : ' <span class="muted">(שם אחר)</span>'}</td>
+        <td>${g.sentences}</td><td>${g.words}</td><td>${g.test}</td></tr>`).join("")}
+    </tbody></table>
+    ${asr.chosen.length ? "" : '<div class="warn-line">לא נבחרו סשנים. בחרו לפחות סשן אחד כדי לאמן או ליצור טביעת קול.</div>'}
+    ${voiceBlock(d)}
     <h2 style="font-size:16px;margin-top:6px">הנתונים</h2>
     <table class="runs"><thead><tr><th>קבוצה</th><th>מה נכנס אליה</th><th>הקלטות</th><th>דקות</th></tr></thead><tbody>
-      <tr><td><b>אימון</b></td><td>כל המשפטים שהדובר הקליט בכל הסשנים${cfg.train.with_words ? ", וגם מבחני המילים" : ""}, חוץ ממשפטי המבחן ומקבוצת הבדיקה.</td>
+      <tr><td><b>אימון</b></td><td>כל המשפטים בסשנים שנבחרו${cfg.train.with_words ? ", וגם מבחני המילים" : ""}, חוץ ממשפטי המבחן ומקבוצת הבדיקה.</td>
         <td>${data.train_clips}</td><td>${data.train_minutes}</td></tr>
       <tr><td><b>בדיקה</b></td><td>10% מהמשפטים, שנבחרים קבוע לפי מזהה המשפט. האימון לא לומד מהם. הם בוחרים את המחזור הטוב ביותר.</td>
         <td>${data.val_clips}</td><td>${data.val_minutes}</td></tr>
@@ -1323,7 +1384,7 @@ function renderPipeline() {
       <div class="field"><label for="pRank">דרגת LoRA</label><input type="number" id="pRank" min="2" max="128" value="${cfg.train.rank}"></div>
       <div class="field"><label for="pBatch">גודל אצווה</label><input type="number" id="pBatch" min="1" max="16" value="${cfg.train.batch}"></div>
       <div class="field check"><input type="checkbox" id="pWords" ${cfg.train.with_words ? "checked" : ""}><label for="pWords">גם מבחני המילים</label></div>
-      <button class="primary" id="pTrainBtn" ${training || !data.train_clips ? "disabled" : ""}>אימון</button>
+      <button class="primary" id="pTrainBtn" ${training || !data.train_clips || !asr.chosen.length ? "disabled" : ""}>אימון</button>
     </div>
     ${training ? `<div class="chips"><span class="chip run">${esc(stageLabel(job))}${job.total ? ` · ${job.done} מתוך ${job.total}` : ""}${job.loss != null && job.stage === "train" ? ` · loss ${job.loss}` : ""}</span></div>
       <div class="s-prog"><div class="track ${job.total ? "" : "wait"}"><div style="width:${pct(job)}%"></div></div></div>` : ""}
@@ -1361,6 +1422,20 @@ function renderPipeline() {
   $("pBase").onchange = () => savePipeline({asr: {base: $("pBase").value}});
   $("pLlm").onchange = () => savePipeline({llm: {model: $("pLlm").value}});
   $("pLlmOn").onchange = () => savePipeline({llm: {enabled: $("pLlmOn").checked}});
+  document.querySelectorAll("#stageAsr [data-session]").forEach((c) => {
+    c.onchange = async () => {
+      const names = [...document.querySelectorAll("#stageAsr [data-session]:checked")].map((x) => x.dataset.session);
+      try { await api("/api/pipeline/sessions", {speaker: d.speaker, sessions: names}); await openPipeline(d.speaker); }
+      catch (e) { $("pError").textContent = "שגיאה: " + e.message; }
+    };
+  });
+  $("pVoiceOn").onchange = () => savePipeline({voice: {filter: $("pVoiceOn").checked}});
+  $("pVoiceMode").onchange = () => savePipeline({voice: {mode: $("pVoiceMode").value}});
+  $("pEnrollBtn").onclick = async () => {
+    $("pEnrollBtn").disabled = true; $("pEnrollBtn").textContent = "יוצר…";
+    try { await api("/api/pipeline/enroll", {speaker: d.speaker}); await openPipeline(d.speaker); }
+    catch (e) { $("pError").textContent = "שגיאה: " + e.message; $("pEnrollBtn").disabled = false; }
+  };
   $("pVoice").onchange = () => savePipeline({tts: {voice: $("pVoice").value}});
   $("pRate").onchange = () => savePipeline({tts: {rate: +$("pRate").value}});
   for (const id of ["pEpochs", "pLr", "pRank", "pBatch", "pWords"]) $(id).onchange = saveTrain;

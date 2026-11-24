@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import threading
 import time
 from pathlib import Path
@@ -124,6 +125,67 @@ def correct(text: str, context: list[str], model: str) -> str:
             raise RuntimeError("the language model declined the request")
         result = "".join(b.text for b in response.content if b.type == "text").strip()
     return result.splitlines()[0].strip() if result else text
+
+
+# In Hebrew: in a test with the local model, the Hebrew prompt was correct in 5 of 6 cases, the
+# English prompt in 4 of 6. The model writes the sentence, and the code finds the kept words.
+DECIDE_PROMPT = """מערכת זיהוי דיבור תמללה דובר עברית. לפעמים אדם אחר מדבר לידו, והמערכת כתבה גם חלק מהמילים שלו.
+מילים בסוגריים מרובעים [כך] הן לא בטוחות: הן יכולות להיות של הדובר או של האדם האחר. מילים בלי סוגריים הן בוודאות של הדובר.
+כתוב רק את המשפט של הדובר: שמור את כל המילים בלי הסוגריים, והסר את הסוגריים.
+מילה בסוגריים נשארת, אלא אם ברור שהיא לא חלק מהמשפט של הדובר, למשל מילים שיוצרות משפט אחר בנושא אחר. אם לא ברור, השאר אותה.
+אל תוסיף, אל תשנה ואל תסדר מחדש מילים. החזר רק את המשפט."""
+
+
+def _bare(word: str) -> str:
+    return re.sub(r"[^\w]", "", word)
+
+
+def decide(words: list[dict], context: list[str], model: str) -> set[int]:
+    """Ask the language model which "unsure" words belong to the speaker. Returns their indexes.
+
+    `words` come from voice.label_words(). Words with the label "other" or "silence" are not sent.
+    """
+    sent = [(i, w) for i, w in enumerate(words) if w["label"] in ("own", "unsure")]
+    # A single unsure word is kept with no question. Another person who talks in a pause says a
+    # few words in a row. A single unsure word is usually a word of the speaker next to the other
+    # voice, and the small model often removes a single bracketed word at the end of a sentence.
+    keep = set()
+    for k, (i, w) in enumerate(sent):
+        if w["label"] == "unsure":
+            before = k > 0 and sent[k - 1][1]["label"] == "unsure"
+            after = k + 1 < len(sent) and sent[k + 1][1]["label"] == "unsure"
+            if not before and not after:
+                keep.add(i)
+    unsure = [i for i, w in sent if w["label"] == "unsure" and i not in keep]
+    if not unsure:
+        return keep
+    marked = " ".join(f"[{w['word']}]" if i in unsure else w["word"] for i, w in sent)
+    head = ("משפטים קודמים של הדובר:\n" + "\n".join(f"- {c}" for c in context) + "\n\n" if context
+            else "אין משפטים קודמים.\n\n")
+    user = head + marked
+    if is_local(model):
+        with _lock:
+            out = _load_local(model).create_chat_completion(
+                messages=[{"role": "system", "content": DECIDE_PROMPT}, {"role": "user", "content": user}],
+                temperature=0, max_tokens=200)
+        text = out["choices"][0]["message"]["content"] or ""
+    else:
+        import anthropic
+
+        response = anthropic.Anthropic().beta.messages.create(
+            model=model, max_tokens=400, system=DECIDE_PROMPT, output_config={"effort": "low"},
+            betas=["server-side-fallback-2026-07-01"], fallbacks="default",
+            messages=[{"role": "user", "content": user}])
+        text = "".join(b.text for b in response.content if b.type == "text")
+    # Go through the sent words in order. An unsure word is kept if it is the next word of the answer.
+    answer = [_bare(t) for t in text.split() if _bare(t)]
+    k = 0
+    for i, w in sent:
+        if k < len(answer) and _bare(w["word"]) == answer[k]:
+            k += 1
+            if i in unsure:
+                keep.add(i)
+    return keep
 
 
 def main() -> None:

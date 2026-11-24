@@ -3,7 +3,7 @@
 This is option C in BRIEF.md: LoRA adapters on the attention layers of the encoder and the
 decoder. The steps:
 
-1. Collect the data of the speaker from all the sessions (see collect()):
+1. Collect the data of the speaker from the sessions that the user selected (see collect()):
    - training: the sentence recordings, and the word tests if "with_words" is on;
    - test: the recordings of the test set (prompts/test-set.tsv). A test sentence is never
      used for training, also if the speaker recorded it in the sentence part.
@@ -54,15 +54,24 @@ def progress(stage: str, done: int = 0, total: int = 0, **extra) -> None:
 # ---------------------------------------------------------------- data
 
 
-def collect(speaker: str, with_words: bool = False) -> dict:
-    """The examples of the speaker: {"train": [...], "test": [...]}. Each example: id, path, text, part."""
+def selected(speaker: str) -> list[str]:
+    """The sessions that the user selected for the training of the speaker (on the training screen)."""
+    return list(settings.load()["sessions"].get(speaker, []))
+
+
+def collect(speaker: str, with_words: bool = False, sessions: list[str] | None = None) -> dict:
+    """The examples of the speaker: {"train": [...], "test": [...]}. Each example: id, path, text, part.
+
+    If `sessions` is given, use only these sessions (also sessions with a different speaker name).
+    Else use all the sessions with the name of the speaker.
+    """
     import numpy as np
     import soundfile as sf
 
     tests = test_ids()
     train, test, silent = [], [], []
     for g in list_groups():
-        if g["speaker"] != speaker:
+        if (g["name"] not in sessions) if sessions is not None else (g["speaker"] != speaker):
             continue
         session = RECORDINGS / g["name"]
         parts = ["test", "words"] + [p.name for p in sorted(session.glob("sentences*")) if p.is_dir()]
@@ -106,9 +115,9 @@ def split_validation(train: list[dict], share: float = 0.10) -> tuple[list[dict]
     return [ex for ex in train if ex not in val], val
 
 
-def summary(speaker: str, with_words: bool = False) -> dict:
+def summary(speaker: str, with_words: bool = False, sessions: list[str] | None = None) -> dict:
     """The size of the three sets: training, validation, and test (the holdout set)."""
-    data = collect(speaker, with_words)
+    data = collect(speaker, with_words, sessions)
     train, val = split_validation(data["train"])
     minutes = lambda xs: round(sum(x["seconds"] for x in xs) / 60, 2)  # noqa: E731
     return {"train_clips": len(train), "train_minutes": minutes(train),
@@ -167,7 +176,10 @@ def train(speaker: str, epochs: int, lr: float, rank: int, batch: int, with_word
     from .transcribe import read_wav
 
     base = settings.base()
-    data = collect(speaker, with_words)
+    sessions = selected(speaker)
+    if not sessions:
+        raise SystemExit(f"select the sessions of the speaker {speaker} on the training screen (or use --sessions)")
+    data = collect(speaker, with_words, sessions)
     train_set, val_set = split_validation(data["train"])
     if not train_set:
         raise SystemExit(f"no training data for the speaker {speaker}")
@@ -177,7 +189,7 @@ def train(speaker: str, epochs: int, lr: float, rank: int, batch: int, with_word
         "speaker": speaker, "created": datetime.now().isoformat(timespec="seconds"), "state": "training",
         "base": base["label"], "params": {"epochs": epochs, "lr": lr, "rank": rank, "batch": batch,
                                           "with_words": with_words, "method": "LoRA (encoder + decoder)"},
-        "data": {"train_clips": len(train_set), "val_clips": len(val_set), "test_clips": len(data["test"]),
+        "data": {"sessions": sessions, "train_clips": len(train_set), "val_clips": len(val_set), "test_clips": len(data["test"]),
                  "train_minutes": round(sum(x["seconds"] for x in train_set) / 60, 2)},
     }
     (run / "run.json").write_text(json.dumps(info, ensure_ascii=False, indent=1))
@@ -297,7 +309,7 @@ def train(speaker: str, epochs: int, lr: float, rank: int, batch: int, with_word
 def measure(run: Path) -> Path:
     """Transcribe the test set and the validation set with the base model and the new model."""
     info = json.loads((run / "run.json").read_text())
-    data = collect(info["speaker"], info["params"]["with_words"])
+    data = collect(info["speaker"], info["params"]["with_words"], info["data"].get("sessions"))
     _, val_set = split_validation(data["train"])
     base_ct2 = next(b["ct2"] for b in settings.BASES.values() if b["label"] == info["base"])
     info["eval"] = {
@@ -322,7 +334,10 @@ def main() -> None:
     ap.add_argument("--rank", type=int, default=cfg["rank"])
     ap.add_argument("--batch", type=int, default=cfg["batch"])
     ap.add_argument("--with-words", action="store_true", default=cfg["with_words"])
+    ap.add_argument("--sessions", help="the session names, with commas between them (saved in the settings)")
     a = ap.parse_args()
+    if a.sessions:
+        settings.save({"sessions": {**settings.load()["sessions"], a.speaker: a.sessions.split(",")}})
     if a.evaluate:
         run = settings.MODELS / a.speaker / a.evaluate
         ct2 = run / "ct2"

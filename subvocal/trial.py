@@ -2,8 +2,10 @@
 
 1. While the user holds the button, the app records and transcribes the audio again about
    every second. The screen shows the partial transcript.
-2. When the user releases the button, the app transcribes the full audio with the model of
-   the speaker (the fine-tuned model if the speaker uses one, else the base model).
+2. When the user releases the button, the app removes the speech of other people (if the
+   voice filter is on and the speaker has a voice print, see subvocal/voice.py). Then it
+   transcribes the audio with the model of the speaker (the fine-tuned model if the speaker
+   uses one, else the base model).
 3. A language model corrects the transcript with the context of the earlier sentences
    (if it is on). The default is a local Hebrew model. See subvocal/llm.py.
 4. The macOS "say" command speaks the result.
@@ -18,7 +20,7 @@ import subprocess
 import threading
 import time
 
-from . import llm, settings
+from . import llm, settings, voice
 from .transcribe import load_model, transcribe_audio
 
 OUT_RATE = 16000
@@ -38,7 +40,7 @@ def for_speech(text: str) -> str:
 class Trial:
     def __init__(self):
         self.lock = threading.Lock()
-        self.state = "idle"  # idle | recording | transcribing | correcting | speaking
+        self.state = "idle"  # idle | recording | transcribing | checking | correcting | speaking
         self.partial = ""
         self.turns: list[dict] = []
         self.error = ""
@@ -111,7 +113,7 @@ class Trial:
             t0 = time.time()
             audio = self._audio()
             if len(audio) > OUT_RATE * 0.5:
-                text = transcribe_audio(model, audio)
+                text = self._transcribe(model, audio, final=False)["text"]
                 if self.state == "recording":
                     self.partial = text
             time.sleep(max(0.1, PARTIAL_EVERY - (time.time() - t0)))
@@ -127,6 +129,41 @@ class Trial:
         threading.Thread(target=self._finish, daemon=True).start()
         return self.status()
 
+    def _transcribe(self, model, audio, final: bool) -> dict:
+        """Transcribe with the voice filter of the settings.
+
+        Modes of the filter (settings "voice"):
+            cut        remove the parts of the audio with another voice, then transcribe
+            words      remove the parts that are surely another voice, transcribe the rest with
+                       word times, and remove the words of other people
+            words+llm  the same, and the language model decides about the unsure words
+                       (only in the final transcript, not in the partial transcripts)
+        """
+        cfg = settings.load()
+        vp = voice.load_print(self._speaker) if cfg["voice"]["filter"] else None
+        if len(audio) < OUT_RATE * 0.3:
+            return {"text": ""}
+        if vp is None:
+            return {"text": transcribe_audio(model, audio)}
+        mode = cfg["voice"]["mode"]
+        if mode == "cut":
+            cut, info = voice.apply(audio, self._speaker, vp=vp)
+            return {"text": transcribe_audio(model, cut) if len(cut) > OUT_RATE * 0.3 else "",
+                    "voice": {"mode": mode, "removed": info["removed_seconds"]}}
+        labels, info = voice.filter_words(model, audio, vp)
+        keep, decided = None, False
+        unsure = any(w["label"] == "unsure" for w in labels)
+        if final and mode == "words+llm" and unsure and cfg["llm"]["enabled"] and llm.ready(cfg["llm"]["model"])[0]:
+            self.state = "checking"
+            context = [t["final"] for t in self.turns[-HISTORY:] if t.get("final")]
+            keep, decided = llm.decide(labels, context, cfg["llm"]["model"]), True
+        text = voice.words_text(labels, keep)
+        kept = lambda i, w: w["label"] == "own" or (w["label"] == "unsure" and (keep is None or i in keep))  # noqa: E731
+        return {"text": text, "voice": {
+            "mode": mode, "decided": decided, "removed": info["removed_seconds"],
+            "words": [{"word": w["word"], "label": w["label"], "kept": kept(i, w)} for i, w in enumerate(labels)],
+            "removed_words": sum(not kept(i, w) for i, w in enumerate(labels))}}
+
     # ------------------------------------------------------------ after the release
 
     def _finish(self) -> None:
@@ -140,7 +177,10 @@ class Trial:
             audio = self._audio()
             turn["seconds"] = round(len(audio) / OUT_RATE, 1)
             t0 = time.time()
-            turn["raw"] = transcribe_audio(self._model(path), audio) if len(audio) > OUT_RATE * 0.3 else ""
+            result = self._transcribe(self._model(path), audio, final=True)
+            turn["raw"] = result["text"]
+            if "voice" in result:
+                turn["voice"] = result["voice"]
             turn["times"]["asr"] = round(time.time() - t0, 2)
             text = turn["raw"]
 

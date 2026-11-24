@@ -27,13 +27,18 @@ DEFAULT_LOCAL_LLM = "dictalm-3.0-12b"
 API_LLMS = ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"]
 LLM_MODELS = [*LOCAL_LLMS, *API_LLMS]
 
+VOICE_MODES = ["words+llm", "words", "cut"]
+
 DEFAULTS = {
     "plan_sentences": 40,
     "asr": {"base": "turbo"},
     "train": {"epochs": 5, "lr": 0.0005, "rank": 32, "batch": 4, "with_words": False},
     "active": {},  # speaker -> the name of the training run that the speaker uses ("" = the base model)
+    "sessions": {},  # speaker -> the names of the sessions that the training and the voice print use
     "llm": {"enabled": True, "model": DEFAULT_LOCAL_LLM},
     "tts": {"voice": "Carmit", "rate": 180, "speak": True},
+    # Remove the speech of other people (subvocal/voice.py). Mode: "cut", "words", or "words+llm".
+    "voice": {"filter": True, "mode": "words+llm"},
 }
 
 LIMITS = {
@@ -45,7 +50,7 @@ LIMITS = {
 def _merge(base: dict, extra: dict) -> dict:
     out = copy.deepcopy(base)
     for k, v in extra.items():
-        if k in out and isinstance(out[k], dict) and isinstance(v, dict) and k != "active":
+        if k in out and isinstance(out[k], dict) and isinstance(v, dict) and k not in ("active", "sessions"):
             out[k] = _merge(out[k], v)
         elif k in out:
             out[k] = v
@@ -68,6 +73,8 @@ def save(changes: dict) -> dict:
             raise ValueError(f"{'.'.join(path)} must be from {lo} to {hi}")
     if values["asr"]["base"] not in BASES:
         raise ValueError(f"unknown base model: {values['asr']['base']}")
+    if values["voice"]["mode"] not in VOICE_MODES:
+        raise ValueError(f"unknown voice filter mode: {values['voice']['mode']}")
     if values["llm"]["model"] not in LLM_MODELS:
         raise ValueError(f"unknown language model: {values['llm']['model']}")
     SETTINGS.parent.mkdir(parents=True, exist_ok=True)

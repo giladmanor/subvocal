@@ -307,6 +307,10 @@ class App:
             return pipeline.start_training(groups.safe_name(body["speaker"]))
         if path == "/api/pipeline/active":
             return pipeline.set_active(groups.safe_name(body["speaker"]), body.get("run", ""))
+        if path == "/api/pipeline/sessions":
+            return pipeline.set_sessions(groups.safe_name(body["speaker"]), [str(n) for n in body.get("sessions", [])])
+        if path == "/api/pipeline/enroll":
+            return pipeline.enroll(groups.safe_name(body["speaker"]))
         if path == "/api/pipeline/say":
             return pipeline.say_sample(str(body.get("text", ""))[:300])
         if path.startswith("/api/try/"):

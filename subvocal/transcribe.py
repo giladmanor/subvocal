@@ -35,6 +35,21 @@ def transcribe_audio(model, audio) -> str:
     return " ".join(s.text.strip() for s in segments).strip()
 
 
+def transcribe_words(model, audio) -> list[dict]:
+    """Transcribe, and give each word its start and end time (seconds) and its probability."""
+    import numpy as np
+
+    segments, _ = model.transcribe(
+        np.ascontiguousarray(audio, dtype="float32"), language="he", beam_size=5,
+        condition_on_previous_text=False, word_timestamps=True,
+    )
+    # "join": the piece has no space before it, so it is the end of the word before it
+    # (Whisper cuts צ'ילי into "צ" and "'ילי").
+    return [{"word": w.word.strip(), "join": not w.word.startswith(" ") and i > 0,
+             "start": w.start, "end": w.end, "prob": round(w.probability, 3)}
+            for i, w in enumerate(w for s in segments for w in (s.words or [])) if w.word.strip()]
+
+
 def read_wav(path: Path):
     import soundfile as sf
 

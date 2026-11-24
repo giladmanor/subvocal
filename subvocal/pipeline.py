@@ -14,7 +14,7 @@ import subprocess
 import sys
 import threading
 
-from . import llm, review, settings
+from . import llm, review, settings, voice
 from .groups import list_groups
 from .phonetics import REPO_ROOT
 from .trial import for_speech, llm_credentials
@@ -59,13 +59,16 @@ def status(speaker: str | None) -> dict:
     speaker = speaker if speaker in speakers else (speakers[0] if speakers else "")
     active = cfg["active"].get(speaker, "")
     all_runs = runs(speaker) if speaker else []
+    chosen = list(cfg["sessions"].get(speaker, []))
     return {
         "speaker": speaker, "speakers": speakers, "settings": cfg,
         "bases": settings.BASES, "llm_models": settings.LLM_MODELS,
         "asr": {"active": active if any(r["name"] == active and r["ready"] for r in all_runs) else "",
                 "runs": all_runs,
-                "data": summary(speaker, cfg["train"]["with_words"]) if speaker else {},
-                "job": review.JOBS.get(f"train:{speaker}", {})},
+                "data": summary(speaker, cfg["train"]["with_words"], chosen) if speaker else {},
+                "sessions": sessions_table(chosen), "chosen": chosen,
+                "job": review.JOBS.get(f"train:{speaker}", {}),
+                "voice": voice.status(speaker) if speaker else {}},
         "tts": {"engine": "macOS say", "os": f"macOS {platform.mac_ver()[0]}", "voices": voices()},
         "llm_credentials": llm_credentials(),
         "llm": {"local": llm.is_local(cfg["llm"]["model"]), "reason": llm.ready(cfg["llm"]["model"])[1],
@@ -74,12 +77,33 @@ def status(speaker: str | None) -> dict:
     }
 
 
+def sessions_table(chosen: list[str]) -> list[dict]:
+    """All the sessions, for the selection on the training screen."""
+    out = []
+    for g in list_groups():
+        sentences = sum(b.get("saved", 0) for b in g["batches"])
+        out.append({"name": g["name"], "speaker": g["speaker"], "created": g["created"], "sentences": sentences,
+                    "words": g["parts"]["words"].get("saved", 0), "test": g["parts"]["test"].get("saved", 0),
+                    "chosen": g["name"] in chosen})
+    return out
+
+
+def set_sessions(speaker: str, names: list[str]) -> dict:
+    known = {g["name"] for g in list_groups()}
+    unknown = [n for n in names if n not in known]
+    if unknown:
+        raise ValueError(f"no session: {', '.join(unknown)}")
+    return settings.save({"sessions": {**settings.load()["sessions"], speaker: names}})
+
+
 def start_training(speaker: str) -> dict:
     """Run subvocal/train.py in a subprocess, and read its progress lines."""
     name = f"train:{speaker}"
     job = review.JOBS.get(name)
     if job and job["state"] == "running":
         return job
+    if not settings.load()["sessions"].get(speaker):
+        raise ValueError("select the sessions for the training first")
     job = {"state": "running", "stage": "start", "done": 0, "total": 0, "error": "", "message": ""}
     review.JOBS[name] = job
 
@@ -102,6 +126,12 @@ def start_training(speaker: str) -> dict:
 
     threading.Thread(target=run, daemon=True).start()
     return job
+
+
+def enroll(speaker: str) -> dict:
+    """Make the voice print of the speaker again (about 10 seconds)."""
+    data = voice.enroll(speaker)
+    return {k: v for k, v in data.items() if k != "vector"}
 
 
 def set_active(speaker: str, run: str) -> dict:

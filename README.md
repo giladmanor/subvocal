@@ -148,6 +148,60 @@ You can also select a Claude model on the **אימון מודל** screen. These 
 to the Anthropic API, and need an API key: set `ANTHROPIC_API_KEY` in the terminal that starts the app.
 Without a key, the app speaks the transcript without a correction. The audio stays on the computer.
 
+### Sessions for the training
+
+The training, the voice print, and the noise test use only the sessions that you select in stage 1
+of the **אימון מודל** screen. Select only the sessions in which the speaker talks alone. The speaker
+name of a session is not sufficient: a session can also have the voices of other people, for
+example a person who explains the recording to the speaker.
+
+### Voice filter
+
+The transcription model writes all the speech that it hears, also the words of other people
+near the speaker. The voice filter removes the speech of other people before the transcription.
+
+1. The app makes a voice print of the speaker from the training sentences (never from the test set)
+   of the sessions that you selected. The speaker model is WeSpeaker ECAPA-TDNN 1024 (ONNX, Apache-2.0).
+2. In each turn, the VAD finds the speech, and the app compares windows of 1.5 seconds with the
+   voice print.
+3. The filter then uses one of three modes (stage 1 of the **אימון מודל** screen):
+
+| Mode | What it does |
+|---|---|
+| תוויות מילים + מודל שפה (default) | The app removes only the audio that is surely another voice. Whisper transcribes the rest and gives the time of each word. Each word gets a label: the speaker, another voice, or unsure. The app removes the words of other voices. The language model decides about the runs of two or more unsure words, from the meaning of the sentence and the earlier sentences. |
+| תוויות מילים | The same, without the language model. The app keeps the unsure words. |
+| חיתוך השמע | The app removes the parts of the audio with another voice, and then transcribes. A cut can damage a word of the speaker. |
+
+A word is unsure if its score is a little below the threshold, or if it is a garbled word (low
+Whisper probability) next to a word of another voice. The language model cannot remove a word
+with a score above the threshold. It also does not get a single unsure word: the app keeps it,
+because another person who talks in a pause says a few words in a row.
+
+> **Note:** Whisper often writes only one of two speakers. If it hears another person clearly, it can
+> skip the words of the speaker. For this reason the app removes the clear other voice from the audio
+> before Whisper, and the word labels decide only about the parts near the threshold. The try-out screen shows the removed words crossed out,
+and the unsure words with a dotted line.
+
+The filter works when another person talks before, after, or between the words of the speaker.
+It cannot separate two people who talk at the same time.
+
+To make the voice print, click **יצירת טביעת קול** in stage 1 of the **אימון מודל** screen, or run:
+
+```bash
+python -m subvocal.voice --enroll <speaker>
+```
+
+To run the noise test, use the command that follows. The test mixes the test-set clips of the
+speaker with Hebrew speech of other people from Google FLEURS (CC-BY-4.0, 153 MB, downloaded
+one time into `data/test-audio/`). The training screen shows the result.
+
+```bash
+python -m subvocal.voice --test <speaker>
+```
+
+> **Note:** FLEURS used other microphones and rooms. A real person near the speaker comes through
+> the same microphone, so the real results can be worse than the results of the test.
+
 ### Review screen
 
 To see the labels of a part, click **הצגת התוויות** on the session card. The review screen shows:
